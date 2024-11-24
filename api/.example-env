@@ -1,0 +1,17 @@
+# Nome da aplicação
+SPRING_APPLICATION_NAME=api
+DEBUG=true
+
+# Configuração do banco de dados
+SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/bdims
+SPRING_DATASOURCE_USERNAME=usuarioims
+SPRING_DATASOURCE_PASSWORD=ims123
+SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+
+# Configuração JPA
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_SHOW_SQL=true
+SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+
+# Configuração do servidor
+SERVER_PORT=8080

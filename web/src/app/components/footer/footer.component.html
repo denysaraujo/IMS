@@ -1,3 +1,10 @@
-<footer class="bg-gray-300 dark:bg-gray-800 text-black dark:text-white py-4 text-center">
-    <p>&copy; 2024 Your Company</p>
+<footer class="bg-white dark:bg-gray-800 border-t shadow-lg border-gray-200 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <!-- Copyright e Versão -->
+            <div class="text-gray-600 dark:text-gray-400 text-sm">
+                &copy; {{ currentYear }} {{ companyInfo }} - v{{ appVersion }}
+            </div>
+        </div>
+    </div>
 </footer>

@@ -1,20 +1,25 @@
-<div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
-  <!-- Sidebar -->
-  <app-sidebar class="w-64 bg-gray-800 dark:bg-gray-700 text-white"></app-sidebar>  
+<div class="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+  <!-- Navbar Moderno -->
+  <app-navbar class="sticky top-0 z-50 shadow-lg"></app-navbar>    
 
   <!-- Main Content -->
-  <div class="flex-1 flex flex-col">
-    <!-- Navbar -->
-    <app-navbar class="bg-gray-200 dark:bg-gray-800 p-4"></app-navbar>
+  <div class="flex flex-1">
+    <!-- Sidebar Elegante -->
+    <app-sidebar class="z-40 lg:p-4"></app-sidebar>
     
-    <!-- Main Section -->
-    <main class="flex-1 bg-gray-100 p-6">
-      <router-outlet></router-outlet>
+    <!-- Content Area com Glass Effect -->
+    <main class="flex-1 overflow-auto">
+      <div class="p-6 lg:p-4">
+        <!-- Container com efeito glass -->
+        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 min-h-[calc(100vh-10rem)]">
+          <div>
+            <router-outlet></router-outlet>
+          </div>
+        </div>
+      </div>
     </main>
-
-    <!-- Footer -->
-    <app-footer class="bg-gray-800 dark:bg-gray-900 text-white p-4"></app-footer>
   </div>
+
+  <!-- Footer Moderno -->
+  <app-footer class="border-t border-gray-200/50 dark:border-gray-700/50"></app-footer>
 </div>
-
-

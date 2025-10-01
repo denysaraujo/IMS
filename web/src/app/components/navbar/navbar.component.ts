@@ -1,29 +1,69 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   styleUrls: ['./navbar.component.css']
 })
-export class NavbarComponent {
-  isDarkMode: boolean = false; // Control dark mode state
-  isMenuOpen: boolean = false; // Control mobile menu collapse
+export class NavbarComponent implements OnInit {
+  isDarkMode = false;
+  isMenuOpen = false;
+  
+  // Menu items dinâmicos
+  menuItems = [
+    { label: 'Home', path: '/home', icon: 'fas fa-house' },
+    { label: 'Cadastro de Produtos', path: '/product_registration', icon: 'fas fa-check' },
+    { label: 'Vendas', path: '/sales', icon: 'fas fa-hand-holding-dollar' },
+    { label: 'Estoque', path: '/stock', icon: 'fas fa-paste' },
+    { label: 'Configurações', path: '/settings', icon: 'fas fa-cog' }
+  ]
 
-  // Toggle Dark Mode
+  // Company info dinâmica
+  companyInfo = {
+    name: 'Duo Technology',
+    logo: {
+      text: 'Logo',
+      image: null // ou '/assets/logo.png'
+    }
+  };
+
+  constructor(@Inject(PLATFORM_ID) private platformId: any) {}
+
   toggleDarkMode() {
     this.isDarkMode = !this.isDarkMode;
-    const htmlElement = document.documentElement;
-    if (this.isDarkMode) {
-      htmlElement.classList.add('dark');
-    } else {
-      htmlElement.classList.remove('dark');
+    
+    // Executar apenas no cliente
+    if (isPlatformBrowser(this.platformId)) {
+      const htmlElement = document.documentElement;
+      if (this.isDarkMode) {
+        htmlElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        htmlElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
     }
   }
 
-  // Toggle Mobile Menu
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  closeMenu() {
+    this.isMenuOpen = false;
+  }
+
+  ngOnInit() {
+    // Verificar tema salvo apenas no cliente
+    if (isPlatformBrowser(this.platformId)) {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        this.isDarkMode = true;
+        document.documentElement.classList.add('dark');
+      }
+    }
   }
 }

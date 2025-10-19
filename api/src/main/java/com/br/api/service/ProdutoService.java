@@ -1,12 +1,11 @@
-package com.Inventory.api.service;
+package com.br.api.service;
 
-import com.Inventory.api.model.Produto;
-import com.Inventory.api.repository.ProdutoRepository;
+import com.br.api.model.Produto;
+import com.br.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProdutoService {

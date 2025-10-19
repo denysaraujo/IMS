@@ -1,5 +1,5 @@
 # Etapa 1: Construção do JAR
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # Copiar arquivos necessários para o build
@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Imagem final para executar a aplicação
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
 
 # Copiar o JAR da etapa de build

@@ -1,7 +1,7 @@
-package com.Inventory.api.controller;
+package com.br.api.controller;
 
-import com.Inventory.api.model.Produto;
-import com.Inventory.api.service.ProdutoService;
+import com.br.api.model.Produto;
+import com.br.api.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

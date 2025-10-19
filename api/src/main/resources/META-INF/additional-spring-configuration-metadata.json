@@ -1,0 +1,67 @@
+{"properties": [
+  {
+    "name": "jwt.expiration-ms",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.expiration-ms'"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.secret'"
+  },
+  {
+    "name": "cors.allowed-origins",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allowed-origins'"
+  },
+  {
+    "name": "cors.allowed-methods",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allowed-methods'"
+  },
+  {
+    "name": "jwt.expiration-ms",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.expiration-ms'"
+  },
+  {
+    "name": "cors.allowed-headers",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allowed-headers'"
+  },
+  {
+    "name": "cors.allow-credentials",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allow-credentials'"
+  },
+  {
+    "name": "spring.security.cors.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.security.cors.enabled'"
+  },
+  {
+    "name": "cors.allowed-origins",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allowed-origins'"
+  },
+  {
+    "name": "springdoc.swagger-ui.url",
+    "type": "java.lang.String",
+    "description": "A description for 'springdoc.swagger-ui.url'"
+  },
+  {
+    "name": "springdoc.use-fqn",
+    "type": "java.lang.String",
+    "description": "A description for 'springdoc.use-fqn'"
+  },
+  {
+    "name": "springdoc.swagger-ui.configUrl",
+    "type": "java.lang.String",
+    "description": "A description for 'springdoc.swagger-ui.configUrl'"
+  },
+  {
+    "name": "springdoc.use-fqn",
+    "type": "java.lang.String",
+    "description": "A description for 'springdoc.use-fqn'"
+  }
+]}

@@ -1,43 +1,57 @@
 services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    env_file: .env
+    environment:
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - api_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SPRING_DATASOURCE_USERNAME} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: spring_api
-    ports:
-      - "${SERVER_PORT}:8080"
+    container_name: spring_api   
+    env_file: .env 
     environment:
-      SPRING_APPLICATION_NAME: ${SPRING_APPLICATION_NAME}
-      DEBUG: ${DEBUG}
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL}
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: ${SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT}
-      SERVER_PORT: ${SERVER_PORT}
+      # Spring Config
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_PORT=${SERVER_PORT}
+      
+      # PostgreSQL Config
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      
+      # JWT Config
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
+      
+      # CORS Config
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - CORS_ALLOWED_METHODS=${CORS_ALLOWED_METHODS}   
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}" 
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
-      - api_network
-
-  db:
-    image: postgres:15
-    container_name: postgres_db
-    environment:
-      POSTGRES_USER: usuarioims
-      POSTGRES_PASSWORD: ims123
-      POSTGRES_DB: bdims
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - api_network
+      - api_network  
 
 volumes:
   postgres_data:
 
 networks:
   api_network:
+    driver: bridge

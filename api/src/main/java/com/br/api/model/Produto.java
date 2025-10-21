@@ -14,14 +14,16 @@ public class Produto {
 
     private String nome;
     private Double preco;
+    private Short quantidade;
 
     // Construtores
     public Produto() {}
 
-    public Produto(Long id, String nome, Double preco) {
+    public Produto(Long id, String nome, Double preco, Short quantidade) {
         this.id = id;
         this.nome = nome;
         this.preco = preco;
+        this.quantidade = quantidade;
     }
 
     // Getters e Setters
@@ -47,5 +49,13 @@ public class Produto {
 
     public void setPreco(Double preco) {
         this.preco = preco;
+    }
+
+    public Short getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(Short quantidade) {
+        this.quantidade = quantidade;
     }
 }

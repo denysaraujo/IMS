@@ -16,7 +16,7 @@ export class SidebarComponent {
   menuItems = [
     { 
       label: 'Home', 
-      path: '/home', 
+      path: '/dashboard', 
       icon: 'fas fa-house',
       badge: null 
     },

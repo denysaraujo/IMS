@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -29,8 +30,33 @@ export class NavbarComponent implements OnInit {
       image: null // ou '/assets/logo.png'
     }
   };
+  currentUser: any;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: any) {}
+  constructor(
+    @Inject(PLATFORM_ID) 
+    private platformId: any,
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    // Verificar tema salvo apenas no cliente
+    if (isPlatformBrowser(this.platformId)) {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        this.isDarkMode = true;
+        document.documentElement.classList.add('dark');
+      }
+    }
+
+    // Carregar dados do usuário
+    this.loadUserData();
+  }
+
+  loadUserData() {
+    this.currentUser = this.authService.getCurrentUser();
+    console.log('👤 Usuário no navbar:', this.currentUser);
+  }
 
   toggleDarkMode() {
     this.isDarkMode = !this.isDarkMode;
@@ -56,14 +82,42 @@ export class NavbarComponent implements OnInit {
     this.isMenuOpen = false;
   }
 
-  ngOnInit() {
-    // Verificar tema salvo apenas no cliente
-    if (isPlatformBrowser(this.platformId)) {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark') {
-        this.isDarkMode = true;
-        document.documentElement.classList.add('dark');
-      }
+   // Método para fazer logout
+  logout() {
+    // console.log('🚪 Realizando logout...');
+    this.authService.logout();
+    this.closeMenu(); // Fecha o menu mobile se estiver aberto
+  }
+
+  // Método para formatar o nome de exibição
+  getDisplayName(): string {
+    if (!this.currentUser) {
+      this.loadUserData(); // Tenta carregar novamente se não tiver usuário
+    }
+
+    if (this.currentUser?.nomeCompleto) {
+      return this.currentUser.nomeCompleto;
+    }
+    if (this.currentUser?.username) {
+      // Capitaliza a primeira letra do username
+      return this.currentUser.username.charAt(0).toUpperCase() + 
+             this.currentUser.username.slice(1);
+    }
+    return 'Usuário';
+  }
+
+  // Método para obter a role formatada
+  getFormattedRole(): string {
+    if (!this.currentUser) {
+      this.loadUserData();
+    }
+
+    const role = this.currentUser?.role;
+    switch(role) {
+      case 'ADMIN': return 'Administrador';
+      case 'USER': return 'Usuário';
+      case 'MANAGER': return 'Gerente';
+      default: return role || 'Usuário';
     }
   }
 }

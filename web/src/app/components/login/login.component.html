@@ -1,0 +1,62 @@
+<div class="login-container">
+  <div class="login-box">
+    <h2>Entrar no Sistema IMS</h2>
+    
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="input-group">
+        <label for="username">Usuário</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          [(ngModel)]="loginData.username"
+          required
+          placeholder="Digite seu usuário"
+          [disabled]="loading"
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="password">Senha</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="loginData.password"
+          required
+          placeholder="Digite sua senha"
+          [disabled]="loading"
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn-primary"
+        [disabled]="loading || !loginData.username || !loginData.password"
+      >
+        {{ loading ? 'Entrando...' : 'Login' }}
+      </button>
+
+      <!-- Botão para preencher credenciais de teste -->
+      <button 
+        type="button" 
+        class="btn-test"
+        (click)="fillTestCredentials()"
+        [disabled]="loading"
+      >
+        Preencher Credenciais de Teste
+      </button>
+
+      <p class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </p>
+    </form>
+
+    <!-- Informações de teste -->
+    <div class="test-info">
+      <h4>Credenciais para teste:</h4>
+      <p><strong>Usuário:</strong> admin</p>
+      <p><strong>Senha:</strong> admin123</p>
+    </div>
+  </div>
+</div>

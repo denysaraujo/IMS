@@ -1,4 +1,6 @@
-<div class="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+<div *ngIf="!isLoginPage; else loginPageTemplate"
+  class="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+  
   <!-- Navbar Moderno -->
   <app-navbar class="sticky top-0 z-50 shadow-lg"></app-navbar>    
 
@@ -12,9 +14,7 @@
       <div class="p-6 lg:p-3">
         <!-- Container com efeito glass -->
         <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 min-h-[calc(100vh-10rem)]">
-          <div>
-            <router-outlet></router-outlet>
-          </div>
+          <router-outlet></router-outlet>
         </div>
       </div>
     </main>
@@ -23,3 +23,8 @@
   <!-- Footer Moderno -->
   <app-footer class="border-t border-gray-200/50 dark:border-gray-700/50"></app-footer>
 </div>
+
+<!-- Template para página de login -->
+<ng-template #loginPageTemplate>
+  <router-outlet></router-outlet>
+</ng-template>

@@ -12,15 +12,20 @@ import { AuthService } from '../../services/auth.service';
 export class NavbarComponent implements OnInit {
   isDarkMode = false;
   isMenuOpen = false;
+  isSettingsOpen = false; // Novo estado para dropdown de configurações
   
-  // Menu items dinâmicos
+  // Menu items dinâmicos - removidos Cadastro de Produtos e Estoque
   menuItems = [
     { label: 'Home', path: '/home', icon: 'fas fa-house' },
-    { label: 'Cadastro de Produtos', path: '/product_registration', icon: 'fas fa-check' },
-    { label: 'Vendas', path: '/sales', icon: 'fas fa-hand-holding-dollar' },
-    { label: 'Estoque', path: '/stock', icon: 'fas fa-paste' },
-    { label: 'Configurações', path: '/settings', icon: 'fas fa-cog' }
+    { label: 'Vendas', path: '/sales', icon: 'fas fa-hand-holding-dollar' }
   ]
+
+  // Subitens de configurações
+  settingsItems = [
+    { label: 'Configurações de Usuário', path: '/users', icon: 'fas fa-users' },
+    { label: 'Estoque', path: '/inventory', icon: 'fas fa-boxes' },
+    { label: 'Relatórios', path: '/reports', icon: 'fas fa-chart-bar' }
+  ];
 
   // Company info dinâmica
   companyInfo = {
@@ -78,28 +83,31 @@ export class NavbarComponent implements OnInit {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
-  closeMenu() {
-    this.isMenuOpen = false;
+  toggleSettings() {
+    this.isSettingsOpen = !this.isSettingsOpen;
   }
 
-   // Método para fazer logout
+  closeMenu() {
+    this.isMenuOpen = false;
+    this.isSettingsOpen = false;
+  }
+
+  // Método para fazer logout
   logout() {
-    // console.log('🚪 Realizando logout...');
     this.authService.logout();
-    this.closeMenu(); // Fecha o menu mobile se estiver aberto
+    this.closeMenu();
   }
 
   // Método para formatar o nome de exibição
   getDisplayName(): string {
     if (!this.currentUser) {
-      this.loadUserData(); // Tenta carregar novamente se não tiver usuário
+      this.loadUserData();
     }
 
     if (this.currentUser?.nomeCompleto) {
       return this.currentUser.nomeCompleto;
     }
     if (this.currentUser?.username) {
-      // Capitaliza a primeira letra do username
       return this.currentUser.username.charAt(0).toUpperCase() + 
              this.currentUser.username.slice(1);
     }
@@ -119,5 +127,11 @@ export class NavbarComponent implements OnInit {
       case 'MANAGER': return 'Gerente';
       default: return role || 'Usuário';
     }
+  }
+
+  // Navegar para uma rota e fechar menus
+  navigateTo(path: string) {
+    this.router.navigate([path]);
+    this.closeMenu();
   }
 }

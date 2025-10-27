@@ -21,36 +21,54 @@ export class SidebarComponent {
       badge: null 
     },
     { 
-      label: 'Cadastro de Produtos', 
-      path: '/product_registration', 
-      icon: 'fas fa-check',
-      badge: null 
-    },
-    { 
       label: 'Vendas', 
       path: '/sales', 
-      icon: 'fas fa-hand-holding-dollar',
-      // badge: 5 
-    },
-    { 
-      label: 'Estoque', 
-      path: '/stock', 
-      icon: 'fas fa-paste',
-      // badge: 'New' 
-    },
+      icon: 'fas fa-shopping-cart',
+      badge: null 
+    },    
     { 
       label: 'Configurações', 
       path: '/settings', 
       icon: 'fas fa-cog',
-      badge: null 
+      badge: null,
+      isExpanded: false,
+      children: [
+        { 
+          label: 'Estoque', 
+          path: '/inventory', 
+          icon: 'fas fa-boxes',
+          badge: null 
+        },
+        { 
+          label: 'Usuários', 
+          path: '/users', 
+          icon: 'fas fa-users',
+          badge: null 
+        },
+        { 
+          label: 'Relatórios', 
+          path: '/reports', 
+          icon: 'fas fa-chart-bar',
+          badge: null 
+        }
+      ] 
     },
   ];
 
+  // Alternar expansão do submenu
+  toggleSubmenu(item: any): void {
+    if (item.children) {
+      item.isExpanded = !item.isExpanded;
+    }
+  }
+
+  // Fechar sidebar mobile
   closeMobileSidebar() {
     this.mobileClose.emit();
   }
 
-  isNumberBadge(badge: any): boolean {
-    return typeof badge === 'number';
+  // Fechar sidebar mobile ao clicar em um item
+  onItemClick() {
+    this.closeMobileSidebar();
   }
 }

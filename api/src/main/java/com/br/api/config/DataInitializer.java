@@ -1,5 +1,6 @@
 package com.br.api.config;
 
+import com.br.api.model.Role;
 import com.br.api.model.User;
 import com.br.api.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -15,7 +16,7 @@ public class DataInitializer {
         return args -> {
             if (userRepository.findByUsername("admin").isEmpty()) {
                 String hashedPassword = passwordEncoder.encode("admin123");
-                User admin = new User("Administrador", "admin", hashedPassword, "ADMIN");
+                User admin = new User("Administrador", "admin", hashedPassword, Role.ADMIN);
                 userRepository.save(admin);
                 System.out.println("Usuário ADMIN criado: admin/admin123");
             }

@@ -3,13 +3,14 @@ package com.br.api.controller;
 import com.br.api.model.User;
 import com.br.api.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class UserController {
 
@@ -45,13 +46,33 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
         if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        user.setId(id);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return ResponseEntity.ok(userRepository.save(user));
+        
+        // Busca o usuário existente
+        User existingUser = userRepository.findById(id).orElseThrow();
+        
+        // Atualiza os campos, exceto a senha se for nula ou vazia
+        existingUser.setNomeCompleto(user.getNomeCompleto());
+        existingUser.setUsername(user.getUsername());
+        existingUser.setRole(user.getRole());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setTelefone(user.getTelefone());
+        existingUser.setCelular(user.getCelular());
+        existingUser.setEnabled(user.isEnabled());
+        existingUser.setAccountNonLocked(user.isAccountNonLocked());
+        existingUser.setAccountNonExpired(user.isAccountNonExpired());
+        existingUser.setCredentialsNonExpired(user.isCredentialsNonExpired());
+        
+        // Atualiza a senha apenas se for fornecida
+        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        
+        return ResponseEntity.ok(userRepository.save(existingUser));
     }
 
     @DeleteMapping("/{id}")

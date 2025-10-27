@@ -1,0 +1,88 @@
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-user-plus mr-2 text-green-500"></i>
+        Novo Usuário
+      </h2>
+      
+      <form (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Campos existentes (nome, username, etc.) -->
+        
+        <!-- Email com validação -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            E-mail
+          </label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="user.email"
+            name="email"
+            appEmailValidator
+            (blur)="validateEmail()"
+            (input)="clearEmailError()"
+            [class.border-red-500]="emailError"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            placeholder="usuario@exemplo.com"
+          >
+          <div *ngIf="emailError" class="text-red-500 text-sm mt-1 flex items-center">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            Por favor, insira um e-mail válido
+          </div>
+        </div>
+
+        <!-- Telefone com máscara -->
+        <div>
+          <label for="telefone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Telefone
+          </label>
+          <input
+            type="text"
+            id="telefone"
+            [(ngModel)]="user.telefone"
+            name="telefone"
+            appPhoneMask
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            placeholder="(11) 9999-9999"
+            maxlength="15"
+          >
+        </div>
+
+        <!-- Celular com máscara -->
+        <div>
+          <label for="celular" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Celular
+          </label>
+          <input
+            type="text"
+            id="celular"
+            [(ngModel)]="user.celular"
+            name="celular"
+            appCellphoneMask
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            placeholder="(11) 99999-9999"
+            maxlength="15"
+          >
+        </div>
+
+        <!-- Resto dos campos e botões -->
+        <div class="flex justify-end space-x-3 pt-4">
+          <button
+            type="button"
+            (click)="onCancel()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors duration-200"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-teal-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          >
+            <i class="fas fa-save mr-2"></i>Criar Usuário
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

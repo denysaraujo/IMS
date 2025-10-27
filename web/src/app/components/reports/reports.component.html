@@ -1,0 +1,179 @@
+<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    
+    <!-- Header Section -->
+    <div class="px-4 py-6 sm:px-0">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl overflow-hidden">
+        <div class="px-6 py-5 sm:p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                📊 Relatórios e Analytics
+              </h2>
+              <p class="text-gray-600 dark:text-gray-300">
+                Insights, métricas e análises do sistema.
+              </p>
+            </div>
+            <div class="flex space-x-3">
+              <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <i class="fas fa-download mr-2"></i>Exportar
+              </button>
+              <span class="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white text-sm font-medium rounded-xl shadow-lg">
+                Em Tempo Real
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Cards -->
+    <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      
+      <!-- Sales Report -->
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+            <i class="fas fa-chart-line mr-2 text-green-500"></i>
+            Relatório de Vendas
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ salesData.totalSales }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Vendas Totais</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">R$ {{ salesData.totalRevenue | number:'1.2-2' }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Receita Total</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">R$ {{ salesData.averageSale | number:'1.2-2' }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Ticket Médio</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ salesData.itemsSold }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Itens Vendidos</div>
+            </div>
+          </div>
+          
+          <!-- Chart Placeholder -->
+          <div class="h-48 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center">
+            <div class="text-center">
+              <i class="fas fa-chart-bar text-3xl text-gray-400 mb-2"></i>
+              <p class="text-gray-500 dark:text-gray-400">Gráfico de Vendas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Report -->
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+            <i class="fas fa-boxes mr-2 text-blue-500"></i>
+            Relatório de Estoque
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ inventoryData.totalItems }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Itens em Estoque</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">R$ {{ inventoryData.totalValue | number:'1.2-2' }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Valor Total</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ inventoryData.lowStock }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Estoque Baixo</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ inventoryData.outOfStock }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">Sem Estoque</div>
+            </div>
+          </div>
+          
+          <!-- Chart Placeholder -->
+          <div class="h-48 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center">
+            <div class="text-center">
+              <i class="fas fa-chart-pie text-3xl text-gray-400 mb-2"></i>
+              <p class="text-gray-500 dark:text-gray-400">Gráfico de Estoque</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Reports -->
+    <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      
+      <!-- Top Products -->
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden lg:col-span-2">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+            <i class="fas fa-star mr-2 text-yellow-500"></i>
+            Produtos Mais Vendidos
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div *ngFor="let product of topProducts; let i = index" 
+                 class="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
+                  {{ i + 1 }}
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-gray-800 dark:text-white">{{ product.name }}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-300">{{ product.category }}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-medium text-gray-800 dark:text-white">{{ product.sold }} vendas</div>
+                <div class="text-xs text-gray-600 dark:text-gray-300">R$ {{ product.revenue | number:'1.2-2' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+            <i class="fas fa-tachometer-alt mr-2 text-purple-500"></i>
+            Estatísticas Rápidas
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-300">Novos Clientes</span>
+              <span class="text-sm font-medium text-gray-800 dark:text-white">+24</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-300">Taxa de Conversão</span>
+              <span class="text-sm font-medium text-green-600 dark:text-green-400">+12.5%</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-300">Pedidos Pendentes</span>
+              <span class="text-sm font-medium text-yellow-600 dark:text-yellow-400">8</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-300">Satisfação do Cliente</span>
+              <span class="text-sm font-medium text-green-600 dark:text-green-400">94%</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-300">Crescimento Mensal</span>
+              <span class="text-sm font-medium text-green-600 dark:text-green-400">+18.3%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

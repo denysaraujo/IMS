@@ -16,7 +16,7 @@
                         </p>
                     </div>
                 </div>
-            </div>
+            </div>           
 
             <!-- Right Section -->
             <div class="flex items-center space-x-3">
@@ -37,14 +37,16 @@
                     <!-- Dropdown Menu -->
                     <div class="absolute right-0 top-12 w-48 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                         <div class="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
-                            <p class="text-sm font-semibold text-gray-800 dark:text-white">Usuário</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">administrador</p>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-white">{{ getDisplayName() }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ getFormattedRole() }}</p>
                         </div>
                         <div class="p-2">
-                            <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
+                            <a [routerLink]="'/users'" 
+                               class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
                                 <i class="fas fa-cog w-5 mr-2"></i> Configurações
                             </a>
-                            <a href="#" (click)="logout()" class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
+                            <a href="#" (click)="logout(); $event.preventDefault()" 
+                               class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
                                 <i class="fas fa-sign-out-alt w-5 mr-2"></i> Sair
                             </a>
                         </div>
@@ -64,8 +66,9 @@
 
     <!-- Mobile Menu -->
     <div *ngIf="isMenuOpen" 
-         class="md:hidden absolute top-16 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-lg animate-slideDown">
+         class="md:hidden absolute top-16 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-lg animate-slideDown z-40">
         <div class="px-4 py-3 space-y-1">
+            <!-- Itens principais -->
             <a *ngFor="let item of menuItems" 
                [routerLink]="item.path"
                (click)="closeMenu()"
@@ -76,6 +79,23 @@
                 <i [class]="item.icon"></i>
                 {{ item.label }}
             </a>
+
+            <!-- Configurações no Mobile -->
+            <div class="border-t border-gray-200/50 dark:border-gray-700/50 pt-2 mt-2">
+                <div class="px-4 py-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
+                    Configurações
+                </div>
+                <a *ngFor="let item of settingsItems"
+                   [routerLink]="item.path"
+                   (click)="closeMenu()"
+                   class="px-8 py-3 rounded-xl text-base font-medium transition-all duration-300
+                          text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 
+                          hover:bg-blue-50/50 dark:hover:bg-gray-800/50 backdrop-blur-sm
+                          flex items-center gap-3">
+                    <i [class]="item.icon"></i>
+                    {{ item.label }}
+                </a>
+            </div>
         </div>
     </div>
 </nav>

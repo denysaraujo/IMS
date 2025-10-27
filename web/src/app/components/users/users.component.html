@@ -1,0 +1,589 @@
+<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    
+    <!-- Header Section -->
+    <div class="px-4 py-6 sm:px-0">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl overflow-hidden">
+        <div class="px-6 py-5 sm:p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                👥 Gestão de Usuários
+              </h2>
+              <p class="text-gray-600 dark:text-gray-300">
+                Gerencie usuários, permissões e acessos ao sistema.
+              </p>
+            </div>
+            <div class="flex space-x-3">
+              <button 
+                (click)="openNewUserModal()"
+                class="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <i class="fas fa-plus mr-2"></i>Novo Usuário
+              </button>
+              <span class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-xl shadow-lg">
+                {{ users.length }} Usuários
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Grid -->
+    <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+      <div 
+        *ngFor="let user of users" 
+        class="group bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+      >
+        <div class="p-6">
+          <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0">
+              <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <span class="text-white text-xl font-semibold">
+                  {{ getInitial(user) }}
+                </span>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white truncate">
+                {{ user.nomeCompleto || 'Nome não informado' }}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                {{ user.username }}
+              </p>
+              <div class="mt-2">
+                <span [ngClass]="getRoleBadgeClass(user.role)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  {{ getFormattedRole(user.role) }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="text-gray-500 dark:text-gray-400">Status</span>
+              <p class="font-medium text-gray-800 dark:text-white">
+                <span [ngClass]="getStatusBadgeClass(isUserActive(user))" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  {{ isUserActive(user) ? 'Ativo' : 'Inativo' }}
+                </span>
+              </p>
+            </div>
+            <div>
+              <span class="text-gray-500 dark:text-gray-400">Último acesso</span>
+              <p class="font-medium text-gray-800 dark:text-white text-xs">
+                {{ formatDate(user.lastLogin) || 'Nunca acessou' }}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50/50 dark:bg-gray-800/50 px-6 py-3 border-t border-gray-200/50 dark:border-gray-700/50">
+          <div class="flex justify-end space-x-2">
+            <button 
+              (click)="openViewUserModal(user)"
+              class="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+              title="Visualizar"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+            <button 
+              (click)="openEditUserModal(user)"
+              class="p-2 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200"
+              title="Editar"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button 
+              (click)="openDeleteUserModal(user)"
+              class="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
+              title="Excluir"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="mt-8">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+            <i class="fas fa-list mr-2 text-blue-500"></i>
+            Lista de Usuários
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200/50 dark:divide-gray-700/50">
+              <thead>
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Usuário
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Permissão
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Último Acesso
+                  </th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200/50 dark:divide-gray-700/50">
+                <tr *ngFor="let user of users" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                  <td class="px-4 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
+                        {{ getInitial(user) }}
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                          {{ user.nomeCompleto || 'Nome não informado' }}
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                          {{ user.username }}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap">
+                    <span [ngClass]="getRoleBadgeClass(user.role)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ getFormattedRole(user.role) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap">
+                    <span [ngClass]="getStatusBadgeClass(isUserActive(user))" 
+                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ isUserActive(user) ? 'Ativo' : 'Inativo' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {{ formatDate(user.lastLogin) || 'Nunca' }}
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                      <button 
+                        (click)="openViewUserModal(user)"
+                        class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+                        title="Visualizar"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button 
+                        (click)="openEditUserModal(user)"
+                        class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200"
+                        title="Editar"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button 
+                        (click)="openDeleteUserModal(user)"
+                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
+                        title="Excluir"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Novo Usuário -->
+<div *ngIf="isNewUserModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-user-plus mr-2 text-green-500"></i>
+        Novo Usuário
+      </h2>
+      
+      <form (ngSubmit)="createUser()" class="space-y-4">
+        <div>
+          <label for="nomeCompleto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Nome Completo *
+          </label>
+          <input
+            type="text"
+            id="nomeCompleto"
+            [(ngModel)]="newUser.nomeCompleto"
+            name="nomeCompleto"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            placeholder="Digite o nome completo"
+          >
+        </div>
+
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Nome de Usuário *
+          </label>
+          <input
+            type="text"
+            id="username"
+            [(ngModel)]="newUser.username"
+            name="username"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            placeholder="Digite o nome de usuário"
+          >
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            E-mail
+          </label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="newUser.email"
+            name="email"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            placeholder="Digite o e-mail"
+          >
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="telefone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Telefone
+            </label>
+            <input
+              type="text"
+              id="telefone"
+              [(ngModel)]="newUser.telefone"
+              name="telefone"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              placeholder="(11) 9999-9999"
+            >
+          </div>
+          <div>
+            <label for="celular" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Celular
+            </label>
+            <input
+              type="text"
+              id="celular"
+              [(ngModel)]="newUser.celular"
+              name="celular"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              placeholder="(11) 98888-8888"
+            >
+          </div>
+        </div>
+
+        <div>
+          <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Permissão *
+          </label>
+          <select
+            id="role"
+            [(ngModel)]="newUser.role"
+            name="role"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+          >
+            <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Senha *
+            </label>
+            <input
+              type="password"
+              id="password"
+              [(ngModel)]="newUser.password"
+              name="password"
+              required
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              placeholder="Digite a senha"
+            >
+          </div>
+          <div>
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Confirmar Senha *
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              required
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              placeholder="Confirme a senha"
+            >
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-4">
+          <button
+            type="button"
+            (click)="closeNewUserModal()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors duration-200"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-teal-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          >
+            <i class="fas fa-save mr-2"></i>Criar Usuário
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Usuário -->
+<div *ngIf="isEditUserModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-edit mr-2 text-blue-500"></i>
+        Editar Usuário
+      </h2>
+      
+      <form (ngSubmit)="updateUser()" class="space-y-4">
+        <div>
+          <label for="editNomeCompleto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Nome Completo *
+          </label>
+          <input
+            type="text"
+            id="editNomeCompleto"
+            [(ngModel)]="editUser.nomeCompleto"
+            name="nomeCompleto"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+          >
+        </div>
+
+        <div>
+          <label for="editUsername" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Nome de Usuário *
+          </label>
+          <input
+            type="text"
+            id="editUsername"
+            [(ngModel)]="editUser.username"
+            name="username"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+          >
+        </div>
+
+        <div>
+          <label for="editEmail" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            E-mail
+          </label>
+          <input
+            type="email"
+            id="editEmail"
+            [(ngModel)]="editUser.email"
+            name="email"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+          >
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="editTelefone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Telefone
+            </label>
+            <input
+              type="text"
+              id="editTelefone"
+              [(ngModel)]="editUser.telefone"
+              name="telefone"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            >
+          </div>
+          <div>
+            <label for="editCelular" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Celular
+            </label>
+            <input
+              type="text"
+              id="editCelular"
+              [(ngModel)]="editUser.celular"
+              name="celular"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            >
+          </div>
+        </div>
+
+        <div>
+          <label for="editRole" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Permissão *
+          </label>
+          <select
+            id="editRole"
+            [(ngModel)]="editUser.role"
+            name="role"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+          >
+            <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="editActive"
+            [(ngModel)]="editUser.active"
+            name="active"
+            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          >
+          <label for="editActive" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Usuário ativo
+          </label>
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-4">
+          <button
+            type="button"
+            (click)="closeEditUserModal()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors duration-200"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          >
+            <i class="fas fa-save mr-2"></i>Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Visualizar Usuário -->
+<div *ngIf="isViewUserModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full">
+    <div class="p-6">
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-eye mr-2 text-purple-500"></i>
+        Detalhes do Usuário
+      </h2>
+      
+      <div *ngIf="selectedUser" class="space-y-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-xl font-semibold">
+            {{ getInitial(selectedUser) }}
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ selectedUser.nomeCompleto }}</h3>
+            <p class="text-gray-600 dark:text-gray-300">{{ selectedUser.username }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-gray-500 dark:text-gray-400">Permissão</span>
+            <p class="font-medium text-gray-800 dark:text-white">{{ getFormattedRole(selectedUser.role) }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400">Status</span>
+            <p class="font-medium text-gray-800 dark:text-white">
+              <span [ngClass]="getStatusBadgeClass(isUserActive(selectedUser))" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                {{ isUserActive(selectedUser) ? 'Ativo' : 'Inativo' }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400">E-mail</span>
+            <p class="font-medium text-gray-800 dark:text-white">{{ selectedUser.email || 'Não informado' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400">Telefone</span>
+            <p class="font-medium text-gray-800 dark:text-white">{{ selectedUser.telefone || 'Não informado' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400">Celular</span>
+            <p class="font-medium text-gray-800 dark:text-white">{{ selectedUser.celular || 'Não informado' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400">Último acesso</span>
+            <p class="font-medium text-gray-800 dark:text-white">{{ formatDate(selectedUser.lastLogin) || 'Nunca acessou' }}</p>
+          </div>
+          <div class="col-span-2">
+            <span class="text-gray-500 dark:text-gray-400">Data de criação</span>
+            <p class="font-medium text-gray-800 dark:text-white">{{ formatDate(selectedUser.createdAt) || 'Não informado' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-4">
+        <button
+          (click)="closeViewUserModal()"
+          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors duration-200"
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Excluir Usuário -->
+<div *ngIf="isDeleteUserModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full">
+    <div class="p-6">
+      <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 dark:bg-red-900 rounded-2xl mb-4">
+        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
+      </div>
+      
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white text-center mb-2">Excluir Usuário</h2>
+      <p class="text-gray-600 dark:text-gray-300 text-center mb-6">
+        Tem certeza que deseja excluir o usuário <strong>{{ selectedUser ? selectedUser.nomeCompleto : '' }}</strong>? 
+        <br>Esta ação não pode ser desfeita.
+      </p>
+
+      <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-xl p-4 mb-6">
+        <div class="flex items-center">
+          <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
+          <span class="text-sm text-yellow-700 dark:text-yellow-300">
+            Todos os dados deste usuário serão permanentemente removidos.
+          </span>
+        </div>
+      </div>
+
+      <div class="flex justify-center space-x-3">
+        <button
+          (click)="closeDeleteUserModal()"
+          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors duration-200"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="deleteUser()"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+        >
+          <i class="fas fa-trash mr-2"></i>Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

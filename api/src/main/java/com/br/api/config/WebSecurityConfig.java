@@ -26,45 +26,47 @@ import java.util.List;
 public class WebSecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
 
-    public WebSecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public WebSecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationProvider authProvider) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuração CORS integrada
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/auth/login",
-                    "/api/auth/register",
-                    "/auth/login",
-                    "/auth/register",
+                    "/api/auth/**",          
+                    "/auth/**",
                     "/api-docs/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/swagger-resources/**",
-                    "/webjars/**",
-                    "/users/**" // Permite acesso sem autenticação aos endpoints de usuários
+                    "/webjars/**"
                 ).permitAll()
+                .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN","MANAGER","SUPERVISOR") 
+                .requestMatchers("/api/sales/**").authenticated() 
+                .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "MANAGER") 
                 .anyRequest().authenticated()
             )
-            .authenticationProvider(authProvider)
+            .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Configuração CORS mais robusta
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-            "http://localhost:4200",  // Frontend Angular
-            "http://localhost:8080"   // Backend/Swagger
+            "http://localhost:4200",
+            "http://localhost:8080"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
@@ -87,13 +89,10 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(
-        UserDetailsService userDetailsService, 
-        PasswordEncoder passwordEncoder
-    ) {
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
 }

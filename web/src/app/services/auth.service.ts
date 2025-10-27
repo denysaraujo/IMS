@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface LoginResponse {
   token: string;
@@ -20,7 +21,8 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
-  private apiUrl = 'api';
+  private apiUrl = environment.apiUrl;
+  
 
   login(username: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, { 
@@ -65,7 +67,7 @@ export class AuthService {
     return null;
   }
 
-  getToken(): string | null {
+  getToken(): string | null { 
     if (isPlatformBrowser(this.platformId)) {
       return localStorage.getItem('auth_token');
     }

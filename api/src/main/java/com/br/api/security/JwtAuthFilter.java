@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,23 +29,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/login") ||
-               path.startsWith("/auth/login") ||
-               path.startsWith("/api/auth/register") ||
-               path.startsWith("/auth/register") ||
+        return path.startsWith("/api/auth/") ||
                path.startsWith("/v3/api-docs") ||
                path.startsWith("/swagger-ui") ||
                path.startsWith("/swagger-resources") ||
-               path.startsWith("/webjars") ||
-               path.startsWith("/users");
+               path.startsWith("/webjars");
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                  HttpServletResponse response, 
-                                  FilterChain filterChain) 
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request, 
+            @NonNull HttpServletResponse response, 
+            @NonNull FilterChain filterChain) 
         throws ServletException, IOException {
         
         String header = request.getHeader("Authorization");

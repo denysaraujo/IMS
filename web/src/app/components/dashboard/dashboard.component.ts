@@ -84,6 +84,7 @@ export class DashboardComponent implements OnInit {
       case 'ADMIN': return 'Administrador';
       case 'USER': return 'Usuário';
       case 'MANAGER': return 'Gerente';
+      case 'SUPERVISOR': return 'Supervisor';
       default: return role || 'Usuário';
     }
   }

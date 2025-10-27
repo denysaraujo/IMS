@@ -1,6 +1,7 @@
 package com.br.api.controller;
 
 import com.br.api.model.User;
+import com.br.api.model.Role;
 import com.br.api.repository.UserRepository;
 import com.br.api.security.JwtTokenProvider;
 import java.util.Map;
@@ -109,11 +110,13 @@ public class AuthController {
         private String username;
         private String nomeCompleto;
         private String role;
+        private String roleDisplayName;
 
-        public UserResponse(String username, String nomeCompleto, String role) {
+        public UserResponse(String username, String nomeCompleto, Role role) {
             this.username = username;
             this.nomeCompleto = nomeCompleto;
-            this.role = role;
+            this.role = role.name();
+            this.roleDisplayName = role.getDisplayName();
         }
 
         // Getters e Setters
@@ -139,6 +142,14 @@ public class AuthController {
 
         public void setRole(String role) {
             this.role = role;
+        }
+
+        public String getRoleDisplayName() { 
+            return roleDisplayName; 
+        }
+        
+        public void setRoleDisplayName(String roleDisplayName) { 
+            this.roleDisplayName = roleDisplayName; 
         }
     }
 }

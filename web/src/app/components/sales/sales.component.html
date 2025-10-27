@@ -1,0 +1,191 @@
+<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    
+    <!-- Header Section -->
+    <div class="px-4 py-6 sm:px-0">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl overflow-hidden">
+        <div class="px-6 py-5 sm:p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                🛒 Gestão de Vendas
+              </h2>
+              <p class="text-gray-600 dark:text-gray-300">
+                Controle de vendas, pedidos e transações comerciais.
+              </p>
+            </div>
+            <div class="flex space-x-3">
+              <button class="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <i class="fas fa-plus mr-2"></i>Nova Venda
+              </button>
+              <div class="flex space-x-2">
+                <span class="px-3 py-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-sm font-medium rounded-xl">
+                  {{ getTotalSales() }} Vendas
+                </span>
+                <span class="px-3 py-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-sm font-medium rounded-xl">
+                  R$ {{ getTotalRevenue() | number:'1.2-2' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="fas fa-shopping-cart text-white text-lg"></i>
+          </div>
+          <div class="ml-4">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Vendas Hoje</dt>
+            <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ getTodaySales() }}</dd>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="fas fa-dollar-sign text-white text-lg"></i>
+          </div>
+          <div class="ml-4">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Receita Mensal</dt>
+            <dd class="text-2xl font-bold text-gray-900 dark:text-white">R$ {{ getMonthlyRevenue() | number:'1.2-2' }}</dd>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="fas fa-clock text-white text-lg"></i>
+          </div>
+          <div class="ml-4">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pendentes</dt>
+            <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ getPendingSales() }}</dd>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="fas fa-times-circle text-white text-lg"></i>
+          </div>
+          <div class="ml-4">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Canceladas</dt>
+            <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ getCancelledSales() }}</dd>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Table -->
+    <div class="mt-8">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+              <i class="fas fa-receipt mr-2 text-green-500"></i>
+              Histórico de Vendas
+            </h3>
+            <div class="flex space-x-2">
+              <input type="text" placeholder="Buscar venda..." 
+                     class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <select class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option>Todos os Status</option>
+                <option>Concluída</option>
+                <option>Pendente</option>
+                <option>Cancelada</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200/50 dark:divide-gray-700/50">
+              <thead>
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Venda
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Cliente
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Data
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Itens
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200/50 dark:divide-gray-700/50">
+                <tr *ngFor="let sale of sales" 
+                    class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                  <td class="px-4 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ sale.code }}
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      #{{ sale.id }}
+                    </div>
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ sale.customer }}
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ sale.customerEmail }}
+                    </div>
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {{ sale.date }}
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {{ sale.items.length }} itens
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    R$ {{ sale.total | number:'1.2-2' }}
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap">
+                    <span [ngClass]="getSaleStatusClass(sale.status)" 
+                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ getSaleStatusText(sale.status) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                      <button class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200">
+                        <i class="fas fa-print"></i>
+                      </button>
+                      <button class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

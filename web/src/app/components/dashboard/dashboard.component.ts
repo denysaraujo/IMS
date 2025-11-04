@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { AlertService, AlertSummary, InventoryItem } from '../../services/alert.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,6 +14,8 @@ import { AuthService } from '../../services/auth.service';
 export class DashboardComponent implements OnInit {
   currentUser: any = null;
   lastLogin: string = '';
+  alertSummary: AlertSummary = { lowStockAlerts: 0, expiringProducts: 0 };
+  lowStockAlerts: InventoryItem[] = [];
 
   stats = [
     { 
@@ -43,11 +46,13 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private alertService: AlertService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.loadUserData();
+    this.loadAlerts();
   }
 
   loadUserData() {
@@ -60,11 +65,28 @@ export class DashboardComponent implements OnInit {
       minute: '2-digit'
     });
     
-    // console.log('👤 Usuário atual:', this.currentUser);
-    
     if (!this.currentUser) {
       this.router.navigate(['/login']);
     }
+  }
+
+  loadAlerts() {
+    // Carregar resumo de alertas
+    this.alertService.getAlertSummary().subscribe({
+      next: (summary) => {
+        this.alertSummary = summary;
+        this.stats[3].value = (summary.lowStockAlerts + summary.expiringProducts).toString();
+      },
+      error: (error) => console.error('Erro ao carregar alertas:', error)
+    });
+
+    // Carregar alertas de estoque baixo
+    this.alertService.getLowStockAlerts().subscribe({
+      next: (alerts) => {
+        this.lowStockAlerts = alerts;
+      },
+      error: (error) => console.error('Erro ao carregar alertas de estoque:', error)
+    });
   }
 
   getDisplayName(): string {
@@ -87,5 +109,15 @@ export class DashboardComponent implements OnInit {
       case 'SUPERVISOR': return 'Supervisor';
       default: return role || 'Usuário';
     }
+  }
+
+  // Navegação para estoque
+  navigateToInventory() {
+    this.router.navigate(['/inventory']);
+  }
+
+  // Navegação para vendas
+  navigateToSales() {
+    this.router.navigate(['/sales']);
   }
 }

@@ -5,6 +5,7 @@ import { UsersComponent } from './components/users/users.component';
 import { InventoryComponent } from './components/inventory/inventory.component';
 import { SalesComponent } from './components/sales/sales.component';
 import { ReportsComponent } from './components/reports/reports.component';
+import { CustomersComponent } from './components/customers/customers.component'; // NOVO
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -35,6 +36,10 @@ export const routes: Routes = [
     component: ReportsComponent, 
     canActivate: [authGuard] 
   },
+  { 
+    path: 'customers', 
+    component: CustomersComponent, 
+    canActivate: [authGuard] 
+  },
   { path: '**', redirectTo: '/dashboard' },
-  
 ];

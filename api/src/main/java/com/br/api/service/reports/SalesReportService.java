@@ -20,14 +20,15 @@ public class SalesReportService {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
         
+        // CORREÇÃO: Usar o método getSalesSummary que agora existe
         Object[] summary = saleRepository.getSalesSummary(startOfDay, endOfDay);
         
-        Long totalSales = (Long) summary[0];
-        Double totalRevenue = (Double) summary[1];
-        Double averageSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0.0;
+        // CORREÇÃO: Tratar valores nulos e fazer cast seguro
+        Long totalSales = summary[0] != null ? ((Number) summary[0]).longValue() : 0L;
+        Double totalRevenue = summary[1] != null ? ((Number) summary[1]).doubleValue() : 0.0;
+        Long totalItemsSold = summary[2] != null ? ((Number) summary[2]).longValue() : 0L;
         
-        // Aqui você pode adicionar lógica para contar itens vendidos
-        Long totalItemsSold = 0L; // Implementar conforme necessidade
+        Double averageSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0.0;
         
         return new SalesReport(date, totalSales, totalRevenue, averageSaleValue, totalItemsSold);
     }
@@ -39,13 +40,29 @@ public class SalesReportService {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atStartOfDay();
         
+        // Usar o método getSalesSummary
         Object[] summary = saleRepository.getSalesSummary(startDateTime, endDateTime);
         
-        Long totalSales = (Long) summary[0];
-        Double totalRevenue = (Double) summary[1];
+        // Tratar valores nulos e fazer cast seguro
+        Long totalSales = summary[0] != null ? ((Number) summary[0]).longValue() : 0L;
+        Double totalRevenue = summary[1] != null ? ((Number) summary[1]).doubleValue() : 0.0;
+        Long totalItemsSold = summary[2] != null ? ((Number) summary[2]).longValue() : 0L;
+        
         Double averageSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0.0;
-        Long totalItemsSold = 0L;
         
         return new SalesReport(startDate, totalSales, totalRevenue, averageSaleValue, totalItemsSold);
+    }
+
+    // Adicionar método para relatório personalizado
+    public SalesReport generateCustomReport(LocalDateTime startDate, LocalDateTime endDate) {
+        Object[] summary = saleRepository.getSalesSummary(startDate, endDate);
+        
+        Long totalSales = summary[0] != null ? ((Number) summary[0]).longValue() : 0L;
+        Double totalRevenue = summary[1] != null ? ((Number) summary[1]).doubleValue() : 0.0;
+        Long totalItemsSold = summary[2] != null ? ((Number) summary[2]).longValue() : 0L;
+        
+        Double averageSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0.0;
+        
+        return new SalesReport(startDate.toLocalDate(), totalSales, totalRevenue, averageSaleValue, totalItemsSold);
     }
 }

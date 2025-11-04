@@ -1,8 +1,10 @@
+// user.service.ts - VERSÃO MELHORADA
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+// ✅ Move interface to separate file or keep if only used here
 export interface User {
   id?: number;
   nomeCompleto: string;
@@ -23,6 +25,9 @@ export interface User {
   active?: boolean;
 }
 
+interface CreateUserRequest extends Omit<User, 'id'> {}
+interface UpdateUserRequest extends Partial<Omit<User, 'id'>> {}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -32,7 +37,6 @@ export class UserService {
   constructor(private http: HttpClient) { }
 
   getUsers(): Observable<User[]> {
-    console.log('🔍 [USER SERVICE] Buscando usuários...');
     return this.http.get<User[]>(this.apiUrl);
   }
 
@@ -40,32 +44,28 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/${id}`);
   }
 
-  createUser(user: User): Observable<User> {
-    const userToSend = { ...user };
-    delete (userToSend as any).active;
-    delete (userToSend as any).confirmPassword;
-    
-    console.log('📤 [USER SERVICE] Criando usuário:', userToSend);
+  createUser(user: CreateUserRequest): Observable<User> {
+    const userToSend = this.sanitizeUserData(user);
     return this.http.post<User>(this.apiUrl, userToSend);
   }
 
-  updateUser(id: number, user: User): Observable<User> {
-    const userToUpdate = { ...user };
-    delete (userToUpdate as any).active;
-    delete (userToUpdate as any).confirmPassword;
+  updateUser(id: number, user: UpdateUserRequest): Observable<User> {
+    const userToUpdate = this.sanitizeUserData(user);
     
-    // Remove password se estiver vazio
-    if (!userToUpdate.password || userToUpdate.password.trim() === '') {
+    // Remove empty password
+    if (!userToUpdate.password) {
       delete userToUpdate.password;
     }
-    
-    console.log('📤 [USER SERVICE] Atualizando usuário ID:', id);
-    console.log('📦 [USER SERVICE] Dados:', userToUpdate);
     
     return this.http.put<User>(`${this.apiUrl}/${id}`, userToUpdate);
   }
 
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  private sanitizeUserData(user: any): any {
+    const { active, confirmPassword, ...sanitizedUser } = user;
+    return sanitizedUser;
   }
 }

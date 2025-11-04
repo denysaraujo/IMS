@@ -32,6 +32,8 @@ export class NewUserModalComponent {
     { value: 'SUPERVISOR', label: 'Supervisor' }
   ];
 
+  
+
   onSubmit() {
     this.userCreated.emit(this.user);
   }

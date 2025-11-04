@@ -4,8 +4,6 @@ import com.br.api.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,15 +45,17 @@ public class WebSecurityConfig {
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/swagger-resources/**",
-                    "/webjars/**"
+                    "/webjars/**",
+                    "/error"
                 ).permitAll()
-                .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN","MANAGER","SUPERVISOR") 
+                .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
+                .requestMatchers("/api/inventory/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR") 
                 .requestMatchers("/api/sales/**").authenticated() 
-                .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "MANAGER") 
+                .requestMatchers("/api/reports/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
+                .requestMatchers("/api/customers/**").authenticated()
                 .anyRequest().authenticated()
             )
-            .authenticationProvider(authenticationProvider())
+            .userDetailsService(userDetailsService) // Configuração mais moderna
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -68,7 +68,7 @@ public class WebSecurityConfig {
             "http://localhost:4200",
             "http://localhost:8080"
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
@@ -86,13 +86,5 @@ public class WebSecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
     }
 }

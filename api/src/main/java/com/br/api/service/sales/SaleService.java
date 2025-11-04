@@ -1,8 +1,14 @@
+// SaleService.java
 package com.br.api.service.sales;
 
+import com.br.api.model.customer.Customer;
 import com.br.api.model.sales.Sale;
 import com.br.api.model.sales.SaleItem;
+import com.br.api.model.inventory.InventoryItem;
 import com.br.api.repository.sales.SaleRepository;
+import com.br.api.repository.inventory.InventoryItemRepository;
+import com.br.api.repository.customer.CustomerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,81 +17,69 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class SaleService {
+    
+    @Autowired
+    private SaleRepository saleRepository;
+    
+    @Autowired
+    private InventoryItemRepository inventoryItemRepository;
+    
+    @Autowired
+    private CustomerRepository customerRepository;
+    
+    public Sale processSale(Sale sale) {
+        // Validar se o cliente existe
+        Customer customer = customerRepository.findById(sale.getCustomer().getId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + sale.getCustomer().getId()));
+        
+        sale.setCustomer(customer);
 
-    private final SaleRepository saleRepository;
-
-    public SaleService(SaleRepository saleRepository) {
-        this.saleRepository = saleRepository;
+        // Validar estoque antes de processar
+        for (SaleItem item : sale.getItems()) {
+            Optional<InventoryItem> inventoryItemOpt = inventoryItemRepository.findByProductCode(item.getProductCode());
+            
+            if (inventoryItemOpt.isEmpty()) {
+                throw new RuntimeException("Produto não encontrado: " + item.getProductCode());
+            }
+            
+            InventoryItem inventoryItem = inventoryItemOpt.get();
+            
+            if (inventoryItem.getQuantity() < item.getQuantity()) {
+                throw new RuntimeException("Estoque insuficiente para: " + inventoryItem.getProductName() + 
+                                         ". Disponível: " + inventoryItem.getQuantity() + 
+                                         ", Solicitado: " + item.getQuantity());
+            }
+            
+            item.setInventoryItem(inventoryItem);
+        }
+        
+        sale.processSale();
+        return saleRepository.save(sale);
     }
-
-    public List<Sale> findAll() {
-        return saleRepository.findAll();
+    
+    public List<Sale> getSalesByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
+        return saleRepository.findBySaleDateBetween(startDate, endDate);
     }
-
+    
+    public List<Sale> getSalesByCustomer(Long customerId) {
+        return saleRepository.findByCustomerId(customerId);
+    }
+    
     public Optional<Sale> findById(Long id) {
         return saleRepository.findById(id);
     }
-
-    public Optional<Sale> findBySaleCode(String saleCode) {
-        return saleRepository.findBySaleCode(saleCode);
+    
+    public List<Sale> findAll() {
+        return saleRepository.findAll();
     }
-
-    public List<Sale> findByStatus(String status) {
-        return saleRepository.findByStatus(status);
-    }
-
-    public List<Sale> findSalesBetweenDates(LocalDateTime start, LocalDateTime end) {
-        return saleRepository.findBySaleDateBetween(start, end);
-    }
-
-    @Transactional
-    public Sale createSale(Sale sale) {
-        // Gerar código da venda
-        String saleCode = "SALE-" + System.currentTimeMillis();
-        sale.setSaleCode(saleCode);
+    
+    public void cancelSale(Long saleId) {
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada"));
         
-        // Calcular total
-        sale.calculateTotal();
-        
-        // Associar itens à venda
-        if (sale.getItems() != null) {
-            for (SaleItem item : sale.getItems()) {
-                item.setSale(sale);
-            }
-        }
-        
-        return saleRepository.save(sale);
-    }
-
-    @Transactional
-    public Sale updateSale(Long id, Sale saleDetails) {
-        return saleRepository.findById(id)
-            .map(sale -> {
-                sale.setStatus(saleDetails.getStatus());
-                sale.setNotes(saleDetails.getNotes());
-                
-                // Atualizar itens se fornecidos
-                if (saleDetails.getItems() != null) {
-                    sale.getItems().clear();
-                    sale.getItems().addAll(saleDetails.getItems());
-                    for (SaleItem item : sale.getItems()) {
-                        item.setSale(sale);
-                    }
-                    sale.calculateTotal();
-                }
-                
-                return saleRepository.save(sale);
-            })
-            .orElseThrow(() -> new RuntimeException("Venda não encontrada com id: " + id));
-    }
-
-    @Transactional
-    public void deleteSale(Long id) {
-        saleRepository.deleteById(id);
-    }
-
-    public Object[] getSalesSummary(LocalDateTime start, LocalDateTime end) {
-        return saleRepository.getSalesSummary(start, end);
+        sale.cancelSale();
+        saleRepository.save(sale);
     }
 }

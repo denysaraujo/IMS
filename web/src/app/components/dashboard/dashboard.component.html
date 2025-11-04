@@ -63,6 +63,36 @@
       </div>
     </div>
 
+    <!-- Alertas de Estoque -->
+    <div class="mt-8" *ngIf="lowStockAlerts.length > 0">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-yellow-200/50 dark:border-yellow-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-yellow-200/50 dark:border-yellow-700/50 bg-yellow-50/50 dark:bg-yellow-900/20">
+          <h3 class="text-lg font-bold text-yellow-800 dark:text-yellow-200 flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Alertas de Estoque Baixo
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let alert of lowStockAlerts" 
+                 class="p-4 bg-yellow-50/50 dark:bg-yellow-900/20 border border-yellow-200/50 dark:border-yellow-700/50 rounded-xl">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-semibold text-yellow-800 dark:text-yellow-200">{{ alert.productName }}</h4>
+                  <p class="text-sm text-yellow-600 dark:text-yellow-300 mt-1">
+                    Estoque: {{ alert.quantity }} | Mínimo: {{ alert.minStockLevel }}
+                  </p>
+                </div>
+                <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs font-medium rounded-full">
+                  Crítico
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- User Details & Activities -->
     <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
       
@@ -75,6 +105,7 @@
           </h3>
         </div>
         <div class="p-6 space-y-4">
+          <div class="p-6 space-y-4">
           <div class="flex items-center justify-between py-2">
             <div>
               <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Nome completo</label>
@@ -117,6 +148,7 @@
             <i class="fas fa-clock text-yellow-500"></i>
           </div>
         </div>
+        </div>
       </div>
 
       <!-- Atividades Recentes -->
@@ -141,15 +173,21 @@
               </div>
             </div>
 
-            <!-- Activity 2 -->
-            <div class="flex items-start space-x-4 p-4 rounded-xl bg-purple-50/50 dark:bg-purple-900/20 border border-purple-200/50 dark:border-purple-700/50">
-              <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                <i class="fas fa-chart-bar text-white text-sm"></i>
+            <!-- Activity 2 - Alerta de Estoque -->
+            <div *ngIf="alertSummary.lowStockAlerts > 0" 
+                 class="flex items-start space-x-4 p-4 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/20 border border-yellow-200/50 dark:border-yellow-700/50">
+              <div class="flex-shrink-0 w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+                <i class="fas fa-exclamation-triangle text-white text-sm"></i>
               </div>
               <div class="flex-1">
-                <p class="text-sm font-semibold text-gray-800 dark:text-white">Dashboard acessado</p>
-                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Painel principal carregado</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">{{ lastLogin }}</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white">Alertas de Estoque</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  {{ alertSummary.lowStockAlerts }} produto(s) com estoque baixo
+                </p>
+                <button (click)="navigateToInventory()" 
+                        class="mt-2 text-xs text-yellow-600 dark:text-yellow-400 hover:text-yellow-500 font-medium">
+                  Ver estoque →
+                </button>
               </div>
             </div>
 
@@ -160,7 +198,9 @@
               </div>
               <div class="flex-1">
                 <p class="text-sm font-semibold text-gray-800 dark:text-white">Novas notificações</p>
-                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">5 alertas não lidos</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  {{ alertSummary.lowStockAlerts + alertSummary.expiringProducts }} alertas não lidos
+                </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">{{ lastLogin }}</p>
               </div>
             </div>
@@ -180,17 +220,20 @@
         </div>
         <div class="p-6">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button class="group p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <button (click)="navigateToInventory()"
+                    class="group p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-plus text-lg mb-2"></i>
               <p class="text-sm font-medium">Novo Produto</p>
             </button>
             
-            <button class="group p-4 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <button (click)="navigateToSales()"
+                    class="group p-4 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-shopping-cart text-lg mb-2"></i>
-              <p class="text-sm font-medium">Nova Venda</p>
+              <p class="text-sm font-medium">Nova 'Venda</p>
             </button>
             
-            <button class="group p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <button (click)="navigateToInventory()"
+                    class="group p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-boxes text-lg mb-2"></i>
               <p class="text-sm font-medium">Ver Estoque</p>
             </button>

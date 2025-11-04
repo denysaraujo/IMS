@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,15 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
     List<InventoryItem> findBySupplier(String supplier);
     
     List<InventoryItem> findByInventoryId(Long inventoryId);
+
+    List<InventoryItem> findByLowStockAlertTrue();
     
+    List<InventoryItem> findByExpirationDateBeforeAndExpirationDateNotNull(LocalDate date);
+    
+    Long countByLowStockAlertTrue();
+    
+    Long countByExpirationDateBefore(LocalDate date);
+        
     @Query("SELECT i FROM InventoryItem i WHERE i.quantity <= i.minStockLevel")
     List<InventoryItem> findLowStockItems();
     

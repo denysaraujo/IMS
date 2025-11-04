@@ -34,6 +34,12 @@ export class SidebarComponent {
       isExpanded: false,
       children: [
         { 
+          label: 'Clientes', 
+          path: '/customers', 
+          icon: 'fas fa-user',
+          badge: null 
+        },
+        { 
           label: 'Estoque', 
           path: '/inventory', 
           icon: 'fas fa-boxes',

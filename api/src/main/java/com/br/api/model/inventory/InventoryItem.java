@@ -1,6 +1,8 @@
 package com.br.api.model.inventory;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,15 +38,21 @@ public class InventoryItem {
 
     private String supplier;
 
-    private String location; // Localização específica no estoque
+    private String location;
 
     @Column(nullable = false)
-    private String status; // AVAILABLE, LOW_STOCK, OUT_OF_STOCK, DISCONTINUED
+    private String status; 
+
+    @Column(nullable = false)
+    private boolean lowStockAlert = false;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private LocalDate expirationDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_id", nullable = false)
@@ -122,6 +130,7 @@ public class InventoryItem {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+        checkStockAlert(); 
         updateStatus();
     }
 
@@ -154,6 +163,10 @@ public class InventoryItem {
         }
     }
 
+    public void checkStockAlert() {
+        this.lowStockAlert = this.quantity <= this.minStockLevel;
+    }
+    
     public void removeStock(Integer quantityToRemove) {
         if (quantityToRemove > 0 && quantityToRemove <= quantity) {
             this.quantity -= quantityToRemove;

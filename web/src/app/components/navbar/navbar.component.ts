@@ -22,9 +22,11 @@ export class NavbarComponent implements OnInit {
 
   // Subitens de configurações
   settingsItems = [
+    { label: 'Clientes', path: '/customers', icon: 'fas fa-user' },
     { label: 'Configurações de Usuário', path: '/users', icon: 'fas fa-users' },
     { label: 'Estoque', path: '/inventory', icon: 'fas fa-boxes' },
     { label: 'Relatórios', path: '/reports', icon: 'fas fa-chart-bar' }
+    
   ];
 
   // Company info dinâmica
@@ -100,10 +102,6 @@ export class NavbarComponent implements OnInit {
 
   // Método para formatar o nome de exibição
   getDisplayName(): string {
-    if (!this.currentUser) {
-      this.loadUserData();
-    }
-
     if (this.currentUser?.nomeCompleto) {
       return this.currentUser.nomeCompleto;
     }

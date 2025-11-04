@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -11,53 +11,82 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginData = { username: '', password: '' };
   loading = false;
   errorMessage = '';
+  returnUrl = '/dashboard';
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
-  onSubmit() {
-    if (!this.loginData.username || !this.loginData.password) {
-      this.errorMessage = 'Por favor, preencha todos os campos';
-      return;
+  ngOnInit() {
+    // ✅ Get return url from route parameters or default to '/dashboard'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    
+    // ✅ Redirect if already logged in
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate([this.returnUrl]);
     }
+  }
+
+  onSubmit() {
+    if (!this.isFormValid()) return;
 
     this.loading = true;
     this.errorMessage = '';
 
     this.authService.login(this.loginData.username, this.loginData.password)
       .subscribe({
-        next: (response) => {
-          this.router.navigate(['/dashboard']);
-          this.loading = false;
+        next: () => {
+          this.router.navigateByUrl(this.returnUrl);
         },
         error: (error) => {
-          console.error('Login error:', error);
-          this.errorMessage = this.getErrorMessage(error);
+          this.handleError(error);
           this.loading = false;
         }
       });
   }
 
-  private getErrorMessage(error: any): string {
-    if (error.status === 0) {
-      return 'Não foi possível conectar ao servidor. Verifique se a API está rodando.';
-    } else if (error.status === 401) {
-      return 'Usuário ou senha inválidos';
-    } else if (error.status === 500) {
-      return 'Erro interno do servidor. Tente novamente.';
+  private isFormValid(): boolean {
+    if (!this.loginData.username.trim() || !this.loginData.password.trim()) {
+      this.errorMessage = 'Por favor, preencha todos os campos';
+      return false;
+    }
+    
+    if (this.loginData.username.length < 3) {
+      this.errorMessage = 'Usuário deve ter pelo menos 3 caracteres';
+      return false;
+    }
+    
+    return true;
+  }
+
+  isDarkMode = false;
+
+  toggleTheme() {
+    this.isDarkMode = !this.isDarkMode;
+    if (this.isDarkMode) {
+      document.documentElement.classList.add('dark');
     } else {
-      return 'Erro ao conectar ao servidor';
+      document.documentElement.classList.remove('dark');
     }
   }
 
-  fillTestCredentials() {
-    this.loginData.username = 'admin';
-    this.loginData.password = 'admin123';
+  private handleError(error: any): void {
+    console.error('Login error:', error);
+    
+    if (error.status === 0) {
+      this.errorMessage = 'Servidor indisponível. Tente novamente em alguns instantes.';
+    } else if (error.status === 401) {
+      this.errorMessage = 'Credenciais inválidas. Verifique seu usuário e senha.';
+    } else if (error.status >= 500) {
+      this.errorMessage = 'Erro interno do servidor. Nossa equipe foi notificada.';
+    } else {
+      this.errorMessage = 'Erro inesperado. Tente novamente.';
+    }
   }
 }

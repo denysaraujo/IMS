@@ -1,4 +1,4 @@
-package com.br.api.model.andress;
+package com.br.api.model.address;
 
 import jakarta.persistence.Embeddable;
 

@@ -1,6 +1,6 @@
 package com.br.api.dto;
 
-import com.br.api.model.andress.Address;
+import com.br.api.model.address.Address;
 import com.br.api.model.customer.CustomerType;
 
 import java.time.LocalDateTime;

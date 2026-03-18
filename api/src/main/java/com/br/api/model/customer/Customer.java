@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.br.api.model.andress.Address;
+import com.br.api.model.address.Address;
 import com.br.api.model.sales.Sale;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

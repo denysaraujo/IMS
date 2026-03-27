@@ -1,0 +1,186 @@
+<div class="mt-8">
+  <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+        <i class="fas {{ isCreating ? 'fa-user-plus' : 'fa-edit' }} mr-2 text-green-500"></i>
+        {{ isCreating ? 'Novo Cliente' : 'Editar Cliente' }}
+      </h3>
+    </div>
+    <div class="p-6">
+      <form (ngSubmit)="save.emit()" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Dados Básicos -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Nome <span class="text-red-500">*</span>
+            </label>
+            <input type="text" 
+                   [(ngModel)]="customer.name" 
+                   name="name" 
+                   required
+                   maxlength="100"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                   placeholder="Digite o nome completo">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Documento (CPF/CNPJ) <span class="text-red-500">*</span>
+            </label>
+            <input type="text" 
+                   [(ngModel)]="customer.document" 
+                   name="document" 
+                   required
+                   (input)="onDocumentInput($event)"
+                   [attr.maxlength]="customer.type === 'INDIVIDUAL' ? DOCUMENT_LIMITS.CPF : DOCUMENT_LIMITS.CNPJ"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                   [placeholder]="customer.type === 'INDIVIDUAL' ? '000.000.000-00' : '00.000.000/0000-00'">
+            <div class="text-xs text-gray-500 mt-1">
+              {{ customer.type === 'INDIVIDUAL' ? 'CPF: 000.000.000-00' : 'CNPJ: 00.000.000/0000-00' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tipo <span class="text-red-500">*</span>
+            </label>
+            <select [(ngModel)]="customer.type" 
+                    name="type"
+                    (change)="onDocumentTypeChange()"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+              <option value="INDIVIDUAL">Pessoa Física</option>
+              <option value="COMPANY">Pessoa Jurídica</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Contato -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+            <input type="email" 
+                   [(ngModel)]="customer.email" 
+                   name="email"
+                   maxlength="100"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                   placeholder="exemplo@email.com">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone/Celular</label>
+            <input type="tel" 
+                   [(ngModel)]="customer.phone" 
+                   name="phone"
+                   (input)="onPhoneInput($event)"
+                   [attr.maxlength]="PHONE_LIMITS.CELLPHONE"
+                   placeholder="(00) 00000-0000"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+            <div class="text-xs text-gray-500 mt-1">
+              Formato: (00) 0000-0000 para fixo ou (00) 00000-0000 para celular
+            </div>
+          </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="md:col-span-2 border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
+          <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+            <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+            Endereço
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logradouro</label>
+              <input type="text" 
+                     [(ngModel)]="customer.address!.street" 
+                     name="street"
+                     maxlength="100"
+                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                     placeholder="Rua, Avenida, etc.">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número</label>
+              <input type="text" 
+                     [(ngModel)]="customer.address!.number" 
+                     name="number"
+                     maxlength="10"
+                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                     placeholder="Nº">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Complemento</label>
+              <input type="text" 
+                     [(ngModel)]="customer.address!.complement" 
+                     name="complement"
+                     maxlength="50"
+                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                     placeholder="Apto, Sala, etc.">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bairro</label>
+              <input type="text" 
+                     [(ngModel)]="customer.address!.neighborhood" 
+                     name="neighborhood"
+                     maxlength="50"
+                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                     placeholder="Bairro">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cidade</label>
+              <input type="text" 
+                     [(ngModel)]="customer.address!.city" 
+                     name="city"
+                     maxlength="50"
+                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                     placeholder="Cidade">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
+              <select [(ngModel)]="customer.address!.state" 
+                      name="state"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+                <option value="">Selecione</option>
+                <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CEP</label>
+              <input type="text" 
+                     [(ngModel)]="customer.address!.zipCode" 
+                     name="zipCode"
+                     maxlength="9"
+                     (input)="formatZipCode()"
+                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                     placeholder="00000-000">
+              <div class="text-xs text-gray-500 mt-1">
+                Formato: 00000-000
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="md:col-span-2 flex justify-end space-x-3 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
+          <button type="button" 
+                  (click)="cancel.emit()" 
+                  [disabled]="isLoading"
+                  class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 disabled:opacity-50">
+            <i class="fas fa-times mr-2"></i>
+            Cancelar
+          </button>
+          <button type="submit" 
+                  [disabled]="isLoading"
+                  class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-save mr-2"></i>
+            {{ isLoading ? 'Salvando...' : (isCreating ? 'Criar Cliente' : 'Salvar Alterações') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

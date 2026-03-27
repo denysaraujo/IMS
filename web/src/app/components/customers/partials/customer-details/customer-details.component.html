@@ -1,0 +1,161 @@
+<div class="mt-8">
+  <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+        <i class="fas fa-eye mr-2 text-blue-500"></i>
+        Detalhes do Cliente
+      </h3>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Informações Básicas -->
+        <div>
+          <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
+            <i class="fas fa-user-circle mr-2 text-blue-400"></i>
+            Informações Básicas
+          </h4>
+          <dl class="space-y-3">
+            <div class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nome</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1 font-semibold">{{ customer.name }}</dd>
+            </div>
+            <div class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Documento</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.document }}</dd>
+            </div>
+            <div class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo</dt>
+              <dd class="mt-1">
+                <span [ngClass]="customer.type === 'INDIVIDUAL' ? 
+                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  <i [class]="customer.type === 'INDIVIDUAL' ? 'fas fa-user mr-1' : 'fas fa-building mr-1'"></i>
+                  {{ getCustomerTypeText(customer.type) }}
+                </span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+        
+        <!-- Contato -->
+        <div>
+          <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
+            <i class="fas fa-address-card mr-2 text-green-400"></i>
+            Contato
+          </h4>
+          <dl class="space-y-3">
+            <div class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">
+                <a *ngIf="customer.email" [href]="'mailto:' + customer.email" class="text-blue-600 hover:underline">
+                  {{ customer.email }}
+                </a>
+                <span *ngIf="!customer.email" class="text-gray-400 italic">Não informado</span>
+              </dd>
+            </div>
+            <div class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Telefone</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">
+                <a *ngIf="customer.phone" [href]="'tel:' + customer.phone" class="text-blue-600 hover:underline">
+                  {{ customer.phone }}
+                </a>
+                <span *ngIf="!customer.phone" class="text-gray-400 italic">Não informado</span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+        
+        <!-- Endereço -->
+        <div *ngIf="customer.address" class="md:col-span-2">
+          <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
+            <i class="fas fa-map-marked-alt mr-2 text-yellow-500"></i>
+            Endereço
+          </h4>
+          <dl class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngIf="customer.address.street" class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Logradouro</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.address.street }}</dd>
+            </div>
+            <div *ngIf="customer.address.number" class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Número</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.address.number }}</dd>
+            </div>
+            <div *ngIf="customer.address.complement" class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Complemento</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.address.complement }}</dd>
+            </div>
+            <div *ngIf="customer.address.neighborhood" class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bairro</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.address.neighborhood }}</dd>
+            </div>
+            <div *ngIf="customer.address.city" class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cidade</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.address.city }}</dd>
+            </div>
+            <div *ngIf="customer.address.state" class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.address.state }}</dd>
+            </div>
+            <div *ngIf="customer.address.zipCode" class="flex flex-col">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">CEP</dt>
+              <dd class="text-sm text-gray-900 dark:text-white mt-1">{{ customer.address.zipCode }}</dd>
+            </div>
+          </dl>
+          
+          <!-- Mensagem quando endereço está incompleto -->
+          <div *ngIf="!customer.address.street && !customer.address.city" class="text-sm text-gray-400 italic">
+            Nenhum endereço cadastrado
+          </div>
+        </div>
+      </div>
+      
+      <!-- Estatísticas -->
+      <div *ngIf="customer.totalOrders !== undefined" class="mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
+        <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
+          <i class="fas fa-chart-bar mr-2 text-purple-500"></i>
+          Estatísticas
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
+            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ customer.totalOrders || 0 }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Total de Pedidos</div>
+          </div>
+          <div class="text-center p-4 bg-green-50 dark:bg-green-900/30 rounded-xl">
+            <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ formatCurrency(customer.totalPurchases || 0) }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Gasto</div>
+          </div>
+          <div class="text-center p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-xl">
+            <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ customer.totalOrders || 0 }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Pedidos no Mês</div>
+          </div>
+          <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
+            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              {{ customer.totalOrders ? (customer.totalPurchases! / customer.totalOrders | currency:'BRL':'symbol':'1.0-0') : 'R$ 0' }}
+            </div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Ticket Médio</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botões de Ação -->
+      <div class="flex flex-wrap justify-end gap-3 mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
+        <button (click)="edit.emit()" 
+                class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center">
+          <i class="fas fa-edit mr-2"></i>
+          Editar Cliente
+        </button>
+        <button (click)="delete.emit(customer)" 
+                class="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center">
+          <i class="fas fa-trash mr-2"></i>
+          Excluir Cliente
+        </button>
+        <button (click)="close.emit()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center">
+          <i class="fas fa-times mr-2"></i>
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

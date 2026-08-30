@@ -136,11 +136,6 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-    // Método conveniente para setar role por string
-    public void setRoleFromString(String role) {
-        this.role = Role.fromString(role);
-    }
-
     public String getEmail() {
         return email;
     }

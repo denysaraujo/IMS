@@ -1,4 +1,6 @@
 services:
+
+# PostgreSQL
   db:
     image: postgres:15
     container_name: postgres_db
@@ -9,18 +11,32 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
-      - api_network
+      - sistema_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${SPRING_DATASOURCE_USERNAME} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+  
+  # Redis 
+  redis:
+    image: redis:7-alpine
+    container_name: sistema_redis
+
+    volumes:
+      - redis_data:/data
+
+    networks:
+      - sistema_network
+
+    restart: unless-stopped
+
+# Spring Boot API
   api:
     build:
-      context: .
+      context: ./api
       dockerfile: Dockerfile
     container_name: spring_api   
     env_file: .env 
@@ -47,11 +63,34 @@ services:
       db:
         condition: service_healthy
     networks:
-      - api_network  
+      - sistema_network 
+    restart: unless-stopped
+
+# Angular + Nginx
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: sistema_web
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - sistema_network
+    restart: unless-stopped
+
+# Volumes
 
 volumes:
   postgres_data:
+    name: sistema_postgres_data
+  redis_data:
+    name: sistema_redis_data
+
+# Network
 
 networks:
-  api_network:
+  sistema_network:
     driver: bridge

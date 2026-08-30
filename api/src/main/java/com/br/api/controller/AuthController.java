@@ -1,40 +1,52 @@
 package com.br.api.controller;
 
+import com.br.api.dto.user.UserResponseDTO;
 import com.br.api.model.User;
-import com.br.api.model.Role;
 import com.br.api.repository.UserRepository;
 import com.br.api.security.JwtTokenProvider;
+
 import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(
+        origins = "http://localhost:4200",
+        maxAge = 3600
+)
 public class AuthController {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    
-    public AuthController(JwtTokenProvider jwtTokenProvider,
-                         AuthenticationManager authenticationManager,
-                         PasswordEncoder passwordEncoder,
-                         UserRepository userRepository) {
+
+    public AuthController(
+            JwtTokenProvider jwtTokenProvider,
+            AuthenticationManager authenticationManager,
+            UserRepository userRepository) {
+
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
     }
 
-    // Classe DTO para a requisição de login
+    // =========================================================
+    // LOGIN REQUEST
+    // =========================================================
+
     public static class LoginRequest {
+
         private String username;
         private String password;
 
-        // Getters e Setters
+        public LoginRequest() {
+        }
+
         public String getUsername() {
             return username;
         }
@@ -52,42 +64,26 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    request.getUsername(), 
-                    request.getPassword()
-                )
-            );
-            
-            String token = jwtTokenProvider.generateToken(request.getUsername());
-            
+    // =========================================================
+    // LOGIN RESPONSE
+    // =========================================================
 
-            User user = userRepository.findByUsername(request.getUsername())
-               .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-            LoginResponse loginResponse = new LoginResponse(token, user);
-
-            return ResponseEntity.ok(loginResponse);
-
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(401).body(Map.of("error", "Credenciais inválidas"));
-        }
-    }
-
-     // Classe DTO para a resposta do login
     public static class LoginResponse {
-        private String token;
-        private UserResponse user;
 
-        public LoginResponse(String token, User user) {
-            this.token = token;
-            this.user = new UserResponse(user.getUsername(), user.getNomeCompleto(), user.getRole());
+        private String token;
+        private UserResponseDTO user;
+
+        public LoginResponse() {
         }
 
-        // Getters e Setters
+        public LoginResponse(
+                String token,
+                User user) {
+
+            this.token = token;
+            this.user = new UserResponseDTO(user);
+        }
+
         public String getToken() {
             return token;
         }
@@ -96,60 +92,61 @@ public class AuthController {
             this.token = token;
         }
 
-        public UserResponse getUser() {
+        public UserResponseDTO getUser() {
             return user;
         }
 
-        public void setUser(UserResponse user) {
+        public void setUser(UserResponseDTO user) {
             this.user = user;
         }
     }
 
-    // Classe DTO para os dados do usuário na resposta
-    public static class UserResponse {
-        private String username;
-        private String nomeCompleto;
-        private String role;
-        private String roleDisplayName;
+    // =========================================================
+    // LOGIN
+    // =========================================================
 
-        public UserResponse(String username, String nomeCompleto, Role role) {
-            this.username = username;
-            this.nomeCompleto = nomeCompleto;
-            this.role = role.name();
-            this.roleDisplayName = role.getDisplayName();
-        }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(
+            @RequestBody LoginRequest request) {
 
-        // Getters e Setters
-        public String getUsername() {
-            return username;
-        }
+        try {
 
-        public void setUsername(String username) {
-            this.username = username;
-        }
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
 
-        public String getNomeCompleto() {
-            return nomeCompleto;
-        }
+            User user = userRepository
+                    .findByUsername(request.getUsername())
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Usuário não encontrado"
+                            )
+                    );
 
-        public void setNomeCompleto(String nomeCompleto) {
-            this.nomeCompleto = nomeCompleto;
-        }
+            String token =
+                    jwtTokenProvider.generateToken(
+                            user.getUsername()
+                    );
 
-        public String getRole() {
-            return role;
-        }
+            LoginResponse response =
+                    new LoginResponse(token, user);
 
-        public void setRole(String role) {
-            this.role = role;
-        }
+            return ResponseEntity.ok(response);
 
-        public String getRoleDisplayName() { 
-            return roleDisplayName; 
-        }
-        
-        public void setRoleDisplayName(String roleDisplayName) { 
-            this.roleDisplayName = roleDisplayName; 
+        } catch (AuthenticationException e) {
+
+            return ResponseEntity
+                    .status(401)
+                    .body(
+                            Map.of(
+                                    "error",
+                                    "Credenciais inválidas"
+                            )
+                    );
         }
     }
 }
+

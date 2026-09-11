@@ -51,6 +51,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                 .requestMatchers("/api/inventory/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR") 
                 .requestMatchers("/api/sales/**").authenticated() 
+                .requestMatchers("/api/rentals/**").authenticated()
                 .requestMatchers("/api/reports/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                 .requestMatchers("/api/customers/**").authenticated()
                 .anyRequest().authenticated()

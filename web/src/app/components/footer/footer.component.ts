@@ -9,6 +9,6 @@ import { RouterModule } from '@angular/router';
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();
-  appVersion = '1.0.0';
+  appVersion = '1.40.0';
   companyInfo = 'Duo Technology';
 }

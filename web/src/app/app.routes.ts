@@ -5,41 +5,47 @@ import { UsersComponent } from './components/users/users.component';
 import { InventoryComponent } from './components/inventory/inventory.component';
 import { SalesComponent } from './components/sales/sales.component';
 import { ReportsComponent } from './components/reports/reports.component';
-import { CustomersComponent } from './components/customers/customers.component'; // NOVO
+import { CustomersComponent } from './components/customers/customers.component';
+import { RentalComponent } from './components/rental/rental.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { 
-    path: 'dashboard', 
+  {
+    path: 'dashboard',
     component: DashboardComponent,
     canActivate: [authGuard]
-  },  
-  { 
-    path: 'users', 
+  },
+  {
+    path: 'users',
     component: UsersComponent,
-    canActivate: [authGuard] 
+    canActivate: [authGuard]
   },
-  { 
-    path: 'inventory', 
-    component: InventoryComponent, 
-    canActivate: [authGuard] 
+  {
+    path: 'inventory',
+    component: InventoryComponent,
+    canActivate: [authGuard]
   },
-  { 
-    path: 'sales', 
-    component: SalesComponent, 
-    canActivate: [authGuard] 
+  {
+    path: 'sales',
+    component: SalesComponent,
+    canActivate: [authGuard]
   },
-  { 
-    path: 'reports', 
-    component: ReportsComponent, 
-    canActivate: [authGuard] 
+  {
+    path: 'reports',
+    component: ReportsComponent,
+    canActivate: [authGuard]
   },
-  { 
-    path: 'customers', 
-    component: CustomersComponent, 
-    canActivate: [authGuard] 
+  {
+    path: 'customers',
+    component: CustomersComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'rentals',
+    component: RentalComponent,
+    canActivate: [authGuard]
   },
   { path: '**', redirectTo: '/dashboard' },
 ];

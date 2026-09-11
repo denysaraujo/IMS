@@ -56,6 +56,14 @@ public class SaleService {
         }
         
         sale.processSale();
+
+        for (SaleItem item : sale.getItems()) {
+            InventoryItem inventoryItem = item.getInventoryItem();
+            if (inventoryItem != null) {
+                inventoryItemRepository.save(inventoryItem);
+            }
+        }
+
         return saleRepository.save(sale);
     }
     
@@ -80,6 +88,12 @@ public class SaleService {
                 .orElseThrow(() -> new RuntimeException("Venda não encontrada"));
         
         sale.cancelSale();
+        for (SaleItem item : sale.getItems()) {
+            InventoryItem inventoryItem = inventoryItemRepository.findByProductCode(item.getProductCode())
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado para estorno: " + item.getProductCode()));
+            inventoryItem.addStock(item.getQuantity());
+            inventoryItemRepository.save(inventoryItem);
+        }
         saleRepository.save(sale);
     }
 }

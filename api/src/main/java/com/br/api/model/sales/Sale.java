@@ -1,7 +1,6 @@
 package com.br.api.model.sales;
 
 import com.br.api.model.customer.Customer;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,11 +31,9 @@ public class Sale {
     // Relacionamento com Customer
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
-    @JsonIgnore // 🔥 CORREÇÃO: Evita recursão infinita
     private Customer customer;
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore // 🔥 CORREÇÃO: Evita recursão com SaleItem se necessário
     private List<SaleItem> items = new ArrayList<>();
 
     // Construtores

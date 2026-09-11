@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { InventoryService } from '../../services/inventory.service';
+import { ReportService } from '../../services/report.service';
+import { SaleService } from '../../services/sale.service';
 
 @Component({
   selector: 'app-reports',
@@ -12,43 +15,89 @@ import { AuthService } from '../../services/auth.service';
 })
 export class ReportsComponent implements OnInit {
   currentUser: any = null;
-  
+
   salesData = {
-    totalSales: 156,
-    totalRevenue: 125430.50,
-    averageSale: 804.04,
-    itemsSold: 423
+    totalSales: 0,
+    totalRevenue: 0,
+    averageSale: 0,
+    itemsSold: 0
   };
 
   inventoryData = {
-    totalItems: 1234,
-    totalValue: 287650.75,
-    lowStock: 15,
-    outOfStock: 8
+    totalItems: 0,
+    totalValue: 0,
+    lowStock: 0,
+    outOfStock: 0
   };
 
-  topProducts = [
-    { name: 'Notebook Dell Inspiron', category: 'Eletrônicos', sold: 45, revenue: 157495.50 },
-    { name: 'Mouse Logitech MX', category: 'Periféricos', sold: 89, revenue: 26611.10 },
-    { name: 'Monitor 24" Samsung', category: 'Eletrônicos', sold: 32, revenue: 28799.68 },
-    { name: 'Teclado Mecânico', category: 'Periféricos', sold: 28, revenue: 12600.00 },
-    { name: 'Headphone Sony', category: 'Áudio', sold: 25, revenue: 8750.00 }
-  ];
+  topProducts: any[] = [];
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private reportService: ReportService,
+    private inventoryService: InventoryService,
+    private saleService: SaleService
   ) {}
 
   ngOnInit() {
     this.loadUserData();
+    this.loadReports();
   }
 
   loadUserData() {
     this.currentUser = this.authService.getCurrentUser();
-    
+
     if (!this.currentUser) {
       this.router.navigate(['/login']);
     }
+  }
+
+  loadReports(): void {
+    const today = new Date();
+    const date = today.toISOString().slice(0, 10);
+
+    this.reportService.getDailySalesReport(date).subscribe({
+      next: report => {
+        this.salesData = {
+          totalSales: report.totalSales || 0,
+          totalRevenue: report.totalRevenue || 0,
+          averageSale: report.averageSaleValue || 0,
+          itemsSold: report.totalItemsSold || 0
+        };
+      },
+      error: error => console.error('Erro ao carregar relatório de vendas:', error)
+    });
+
+    this.inventoryService.getItems().subscribe({
+      next: items => {
+        this.inventoryData = {
+          totalItems: items.reduce((total, item) => total + (item.quantity || 0), 0),
+          totalValue: items.reduce((total, item) => total + (item.quantity || 0) * (item.unitPrice || 0), 0),
+          lowStock: items.filter(item => item.quantity > 0 && item.quantity <= item.minStockLevel).length,
+          outOfStock: items.filter(item => item.quantity <= 0).length
+        };
+      },
+      error: error => console.error('Erro ao carregar relatório de estoque:', error)
+    });
+
+    this.saleService.getSales().subscribe({
+      next: sales => {
+        const products = new Map<string, { name: string; category: string; sold: number; revenue: number }>();
+        sales.forEach(sale => sale.items?.forEach(item => {
+          const current = products.get(item.productCode) || {
+            name: item.productName,
+            category: 'Produtos',
+            sold: 0,
+            revenue: 0
+          };
+          current.sold += item.quantity;
+          current.revenue += item.quantity * item.unitPrice;
+          products.set(item.productCode, current);
+        }));
+        this.topProducts = [...products.values()].sort((a, b) => b.sold - a.sold).slice(0, 5);
+      },
+      error: error => console.error('Erro ao carregar produtos vendidos:', error)
+    });
   }
 }

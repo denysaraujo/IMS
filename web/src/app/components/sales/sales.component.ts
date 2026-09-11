@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { SaleService, Sale, SaleItem } from '../../services/sale.service';
 import { CustomerService, Customer } from '../../services/customer.service';
+import { InventoryItem, InventoryService } from '../../services/inventory.service';
 
 @Component({
   selector: 'app-sales',
@@ -19,7 +20,7 @@ export class SalesComponent implements OnInit {
   customers: Customer[] = [];
   selectedCustomer: Customer | null = null;
   isCreatingSale: boolean = false;
-  
+
   // newSale inicializado corretamente
   newSale: Sale = {
     saleCode: '',
@@ -38,10 +39,20 @@ export class SalesComponent implements OnInit {
     unitPrice: 0
   };
 
+  readonly barcodeCatalog: Record<string, { productName: string; unitPrice: number }> = {
+    '7891234560011': { productName: 'Notebook Dell Inspiron', unitPrice: 3499.99 },
+    '7891234560028': { productName: 'Mouse Logitech MX', unitPrice: 299.90 },
+    '7891234560035': { productName: 'Teclado Mecânico', unitPrice: 450.00 },
+    '7891234560042': { productName: 'Monitor 24" Samsung', unitPrice: 899.99 },
+    '7891234560059': { productName: 'Cadeira Gamer', unitPrice: 1200.00 },
+    '7891234560066': { productName: 'Headphone Sony', unitPrice: 350.00 }
+  };
+
   constructor(
     private authService: AuthService,
     private saleService: SaleService,
     private customerService: CustomerService,
+    private inventoryService: InventoryService,
     private router: Router
   ) {}
 
@@ -54,53 +65,17 @@ export class SalesComponent implements OnInit {
 
   loadUserData() {
     this.currentUser = this.authService.getCurrentUser();
-    
+
     if (!this.currentUser) {
       this.router.navigate(['/login']);
     }
   }
 
   loadSales() {
-    // Mock data temporário para evitar erros de tipo
-    this.sales = [
-      {
-        id: 1001,
-        saleCode: 'V20240115001', 
-        customer: {
-          name: 'João Silva',
-          email: 'joao@email.com' 
-        },
-        saleDate: '2024-01-15 14:30:00', 
-        items: [
-          { name: 'Notebook Dell', quantity: 1, price: 3499.99 },
-          { name: 'Mouse Logitech', quantity: 1, price: 299.90 }
-        ],
-        totalAmount: 3799.89, 
-        status: 'COMPLETED'
-      },
-      {
-        id: 1002,
-        saleCode: 'V20240115002',
-        customer: {
-          name: 'Maria Santos', 
-          email: 'maria@email.com'
-        },
-        saleDate: '2024-01-15 16:45:00',
-        items: [
-          { name: 'Monitor 24"', quantity: 2, price: 899.99 }
-        ],
-        totalAmount: 1799.98,
-        status: 'COMPLETED'
-      }
-    ];
-
-    // Descomente quando a API estiver pronta:
-    // this.saleService.getSales().subscribe({
-    //   next: (sales) => {
-    //     this.sales = sales;
-    //   },
-    //   error: (error) => console.error('Erro ao carregar vendas:', error)
-    // });
+    this.saleService.getSales().subscribe({
+      next: sales => this.sales = sales,
+      error: error => console.error('Erro ao carregar vendas:', error)
+    });
   }
 
   loadCustomers() {
@@ -131,6 +106,60 @@ export class SalesComponent implements OnInit {
     this.selectedCustomer = null;
   }
 
+  applyBarcodeToSaleItem(barcode: string) {
+    const normalized = barcode?.trim();
+    if (!normalized) {
+      return;
+    }
+
+    this.newItem.productCode = normalized;
+    const item = this.barcodeCatalog[normalized];
+    if (item) {
+      this.newItem.productName = item.productName;
+      this.newItem.unitPrice = item.unitPrice;
+      return;
+    }
+
+    this.inventoryService.getItemByCode(normalized).subscribe({
+      next: (inventoryItem: InventoryItem) => {
+        this.newItem.productName = inventoryItem.productName;
+        this.newItem.unitPrice = inventoryItem.unitPrice;
+      },
+      error: () => console.warn('Produto não encontrado para o código:', normalized)
+    });
+  }
+
+  async readBarcodeFromDevice() {
+    const BarcodeDetectorCtor = (window as any).BarcodeDetector;
+    if (!BarcodeDetectorCtor || !navigator.mediaDevices?.getUserMedia) {
+      alert('Leitura por código de barras não está disponível neste navegador. Digite o código manualmente.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.setAttribute('playsinline', 'true');
+      await video.play();
+
+      const detector = new BarcodeDetectorCtor({ formats: ['code_128', 'ean_13', 'ean_8', 'qr_code'] });
+      const result = await detector.detect(video);
+
+      if (result && result.length > 0) {
+        const code = result[0].rawValue;
+        this.applyBarcodeToSaleItem(code);
+      } else {
+        alert('Nenhum código de barras foi detectado. Tente novamente.');
+      }
+
+      stream.getTracks().forEach(track => track.stop());
+    } catch (error) {
+      console.error('Erro ao ler código de barras:', error);
+      alert('Não foi possível acessar a câmera. Use o campo manualmente.');
+    }
+  }
+
   addItem() {
     if (this.newItem.productCode && this.newItem.productName && this.newItem.quantity > 0 && this.newItem.unitPrice > 0) {
       this.newSale.items.push({...this.newItem});
@@ -150,7 +179,7 @@ export class SalesComponent implements OnInit {
   }
 
   calculateTotal() {
-    this.newSale.totalAmount = this.newSale.items.reduce((total, item) => 
+    this.newSale.totalAmount = this.newSale.items.reduce((total, item) =>
       total + (item.quantity * item.unitPrice), 0
     );
   }
@@ -174,13 +203,13 @@ export class SalesComponent implements OnInit {
     this.saleService.createSale(this.newSale).subscribe({
       next: (sale) => {
         alert('Venda processada com sucesso!');
-        this.loadSales();
+        this.sales = [sale, ...this.sales];
         this.isCreatingSale = false;
         this.selectedCustomer = null;
       },
       error: (error) => {
         console.error('Erro ao processar venda:', error);
-        alert('Erro ao processar venda: ' + error.error?.message || error.message);
+        alert('Erro ao processar venda: ' + (error.error?.message || error.message));
       }
     });
   }
@@ -214,6 +243,44 @@ export class SalesComponent implements OnInit {
 
   getCancelledSales(): number {
     return this.sales.filter(sale => sale.status === 'CANCELLED').length;
+  }
+
+  generateReceipt(sale: any): string {
+    const itemsText = sale.items?.map((item: any) =>
+      `- ${item.name || item.productName}: ${item.quantity} x R$ ${Number(item.price || item.unitPrice || 0).toFixed(2)}`
+    ).join('\n') || 'Nenhum item';
+
+    return [
+      'RECIBO DE VENDA',
+      '================',
+      `Código: ${sale.saleCode}`,
+      `Cliente: ${sale.customer?.name || 'Consumidor'}`,
+      `Data: ${new Date(sale.saleDate).toLocaleString('pt-BR')}`,
+      '',
+      itemsText,
+      '',
+      `Total: R$ ${Number(sale.totalAmount || 0).toFixed(2)}`,
+      '================',
+      'Obrigado pela preferência!'
+    ].join('\n');
+  }
+
+  printReceipt(sale: any): void {
+    const receipt = this.generateReceipt(sale);
+    const printWindow = window.open('', '_blank', 'width=500,height=700');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head><title>Recibo</title></head>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <pre>${receipt}</pre>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 300);
+    }
   }
 
   getSaleStatusClass(status: string): string {

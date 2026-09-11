@@ -1,9 +1,12 @@
 package com.br.api.controller;
 
 import com.br.api.dto.user.UserResponseDTO;
+import com.br.api.dto.auth.ForgotPasswordRequest;
+import com.br.api.dto.auth.ResetPasswordRequest;
 import com.br.api.model.User;
 import com.br.api.repository.UserRepository;
 import com.br.api.security.JwtTokenProvider;
+import com.br.api.service.PasswordRecoveryService;
 
 import java.util.Map;
 
@@ -24,15 +27,18 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final PasswordRecoveryService passwordRecoveryService;
 
     public AuthController(
             JwtTokenProvider jwtTokenProvider,
             AuthenticationManager authenticationManager,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            PasswordRecoveryService passwordRecoveryService) {
 
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.passwordRecoveryService = passwordRecoveryService;
     }
 
     // =========================================================
@@ -146,6 +152,26 @@ public class AuthController {
                                     "Credenciais inválidas"
                             )
                     );
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            passwordRecoveryService.requestReset(request.getEmail());
+        } catch (IllegalStateException ignored) {
+            // Do not reveal whether the account exists or expose recovery details.
+        }
+        return ResponseEntity.ok(Map.of("message", "Se o e-mail estiver cadastrado, enviaremos as instruções de recuperação."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            passwordRecoveryService.resetPassword(request.getToken(), request.getNewPassword());
+            return ResponseEntity.ok(Map.of("message", "Senha redefinida com sucesso."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 }

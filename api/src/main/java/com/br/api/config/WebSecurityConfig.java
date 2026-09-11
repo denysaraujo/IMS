@@ -50,10 +50,10 @@ public class WebSecurityConfig {
                 ).permitAll()
                 .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                 .requestMatchers("/api/inventory/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR") 
-                .requestMatchers("/api/sales/**").authenticated() 
-                .requestMatchers("/api/rentals/**").authenticated()
+                .requestMatchers("/api/sales/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR", "ROLE_USER")
+                .requestMatchers("/api/rentals/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR", "ROLE_USER")
                 .requestMatchers("/api/reports/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
-                .requestMatchers("/api/customers/**").authenticated()
+                .requestMatchers("/api/customers/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR", "ROLE_USER")
                 .anyRequest().authenticated()
             )
             .userDetailsService(userDetailsService) // Configuração mais moderna

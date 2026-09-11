@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { SaleService, Sale, SaleItem } from '../../services/sale.service';
 import { CustomerService, Customer } from '../../services/customer.service';
 import { InventoryItem, InventoryService } from '../../services/inventory.service';
+import { Company, CompanyService } from '../../services/company.service';
 
 @Component({
   selector: 'app-sales',
@@ -16,6 +17,7 @@ import { InventoryItem, InventoryService } from '../../services/inventory.servic
 })
 export class SalesComponent implements OnInit {
   currentUser: any = null;
+  company: Company | null = null;
   sales: any[] = []; // Usei any[] temporariamente para evitar erros
   customers: Customer[] = [];
   selectedCustomer: Customer | null = null;
@@ -53,6 +55,7 @@ export class SalesComponent implements OnInit {
     private saleService: SaleService,
     private customerService: CustomerService,
     private inventoryService: InventoryService,
+    private companyService: CompanyService,
     private router: Router
   ) {}
 
@@ -60,6 +63,7 @@ export class SalesComponent implements OnInit {
     this.loadUserData();
     this.loadSales();
     this.loadCustomers();
+    this.companyService.load().subscribe({ next: company => this.company = company });
     this.generateSaleCode();
   }
 
@@ -251,6 +255,10 @@ export class SalesComponent implements OnInit {
     ).join('\n') || 'Nenhum item';
 
     return [
+      this.company?.name || 'Empresa',
+      [this.company?.document, this.company?.phone].filter(Boolean).join(' | '),
+      [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', '),
+      '',
       'RECIBO DE VENDA',
       '================',
       `Código: ${sale.saleCode}`,
@@ -261,7 +269,7 @@ export class SalesComponent implements OnInit {
       '',
       `Total: R$ ${Number(sale.totalAmount || 0).toFixed(2)}`,
       '================',
-      'Obrigado pela preferência!'
+      this.company?.printFooter || 'Obrigado pela preferência!'
     ].join('\n');
   }
 
@@ -273,6 +281,8 @@ export class SalesComponent implements OnInit {
         <html>
           <head><title>Recibo</title></head>
           <body style="font-family: Arial, sans-serif; padding: 20px;">
+            ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" style="max-width:180px;max-height:80px;display:block;margin:0 auto 16px;">` : ''}
+            <h2 style="text-align:center;margin:0;">${this.company?.name || 'Empresa'}</h2>
             <pre>${receipt}</pre>
           </body>
         </html>

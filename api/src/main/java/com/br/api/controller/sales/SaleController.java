@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ public class SaleController {
     private SaleRepository saleRepository;
     
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR', 'USER')")
     public ResponseEntity<Sale> createSale(@RequestBody Sale sale) {
         try {
             Sale processedSale = saleService.processSale(sale);
@@ -74,6 +76,7 @@ public class SaleController {
     }
     
     @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
     public ResponseEntity<Void> cancelSale(@PathVariable Long id) {
         try {
             saleService.cancelSale(id);

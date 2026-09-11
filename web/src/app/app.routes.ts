@@ -7,6 +7,7 @@ import { SalesComponent } from './components/sales/sales.component';
 import { ReportsComponent } from './components/reports/reports.component';
 import { CustomersComponent } from './components/customers/customers.component';
 import { RentalComponent } from './components/rental/rental.component';
+import { CompanyComponent } from './components/company/company.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -20,12 +21,20 @@ export const routes: Routes = [
   {
     path: 'users',
     component: UsersComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] }
+  },
+  {
+    path: 'company',
+    component: CompanyComponent,
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'inventory',
     component: InventoryComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] }
   },
   {
     path: 'sales',
@@ -35,7 +44,8 @@ export const routes: Routes = [
   {
     path: 'reports',
     component: ReportsComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] }
   },
   {
     path: 'customers',

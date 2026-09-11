@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { Customer, CustomerService } from '../../services/customer.service';
 import { Rental, RentalService } from '../../services/rental.service';
 import { InventoryItem, InventoryService } from '../../services/inventory.service';
+import { Company, CompanyService } from '../../services/company.service';
 
 @Component({
   selector: 'app-rental',
@@ -16,6 +17,7 @@ import { InventoryItem, InventoryService } from '../../services/inventory.servic
 })
 export class RentalComponent implements OnInit {
   currentUser: any = null;
+  company: Company | null = null;
   rentals: any[] = [];
   customers: Customer[] = [];
   selectedCustomer: any = null;
@@ -45,13 +47,15 @@ export class RentalComponent implements OnInit {
     private router: Router,
     private customerService: CustomerService,
     private rentalService: RentalService,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit(): void {
     this.loadUserData();
     this.loadRentals();
     this.loadCustomers();
+    this.companyService.load().subscribe({ next: company => this.company = company });
     this.generateCode();
   }
 
@@ -221,6 +225,10 @@ export class RentalComponent implements OnInit {
 
   generateReceipt(rental: any): string {
     return [
+      this.company?.name || 'Empresa',
+      [this.company?.document, this.company?.phone].filter(Boolean).join(' | '),
+      [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', '),
+      '',
       'RECIBO DE LOCAÇÃO',
       '================',
       `Código: ${rental.rentalCode}`,
@@ -231,7 +239,7 @@ export class RentalComponent implements OnInit {
       `Período: ${rental.rentalDays} dias`,
       `Total: R$ ${Number(rental.totalAmount || 0).toFixed(2)}`,
       '================',
-      'Obrigado pela preferência!'
+      this.company?.printFooter || 'Obrigado pela preferência!'
     ].join('\n');
   }
 
@@ -243,6 +251,8 @@ export class RentalComponent implements OnInit {
         <html>
           <head><title>Recibo de locação</title></head>
           <body style="font-family: Arial, sans-serif; padding: 20px;">
+            ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" style="max-width:180px;max-height:80px;display:block;margin:0 auto 16px;">` : ''}
+            <h2 style="text-align:center;margin:0;">${this.company?.name || 'Empresa'}</h2>
             <pre>${receipt}</pre>
           </body>
         </html>

@@ -6,6 +6,7 @@ import com.br.api.dto.CustomerWithStatsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +45,7 @@ public class CustomerController {
     }
     
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
     public ResponseEntity<?> createCustomer(@RequestBody Customer customer) {
         try {
             Customer savedCustomer = customerService.save(customer);
@@ -56,6 +58,7 @@ public class CustomerController {
     }
     
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
     public ResponseEntity<?> updateCustomer(@PathVariable Long id, @RequestBody Customer customer) {
         try {
             // Verifica se o cliente existe - usando o método correto
@@ -75,6 +78,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
         try {
             // Verifica se o cliente existe antes de deletar

@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    
+
     <!-- Header Section -->
     <div class="px-4 py-6 sm:px-0">
       <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl overflow-hidden">
@@ -16,8 +16,8 @@
               </p>
             </div>
             <div class="flex space-x-3">
-              <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <i class="fas fa-download mr-2"></i>Exportar
+              <button type="button" (click)="printReport()" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <i class="fas fa-print mr-2"></i>Imprimir
               </button>
               <span class="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white text-sm font-medium rounded-xl shadow-lg">
                 Em Tempo Real
@@ -30,7 +30,7 @@
 
     <!-- Report Cards -->
     <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-      
+
       <!-- Sales Report -->
       <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
@@ -58,7 +58,7 @@
               <div class="text-sm text-gray-600 dark:text-gray-300">Itens Vendidos</div>
             </div>
           </div>
-          
+
           <!-- Chart Placeholder -->
           <div class="h-48 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center">
             <div class="text-center">
@@ -96,7 +96,7 @@
               <div class="text-sm text-gray-600 dark:text-gray-300">Sem Estoque</div>
             </div>
           </div>
-          
+
           <!-- Chart Placeholder -->
           <div class="h-48 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center">
             <div class="text-center">
@@ -110,7 +110,7 @@
 
     <!-- Additional Reports -->
     <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-      
+
       <!-- Top Products -->
       <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden lg:col-span-2">
         <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
@@ -121,7 +121,7 @@
         </div>
         <div class="p-6">
           <div class="space-y-4">
-            <div *ngFor="let product of topProducts; let i = index" 
+            <div *ngFor="let product of topProducts; let i = index"
                  class="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
               <div class="flex items-center space-x-3">
                 <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-semibold">

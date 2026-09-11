@@ -4,6 +4,7 @@ import com.br.api.model.rental.Rental;
 import com.br.api.service.rental.RentalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,7 @@ public class RentalController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR', 'USER')")
     public ResponseEntity<Rental> createRental(@RequestBody Rental rental) {
         try {
             return ResponseEntity.ok(rentalService.createRental(rental));
@@ -39,6 +41,7 @@ public class RentalController {
     }
 
     @PutMapping("/{id}/return")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
     public ResponseEntity<Rental> returnRental(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(rentalService.returnRental(id));

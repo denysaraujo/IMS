@@ -1,0 +1,63 @@
+<section class="p-6 max-w-4xl mx-auto">
+  <div class="mb-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Administração</p>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Empresa e documentos</h1>
+    <p class="text-gray-600 dark:text-gray-300">Esses dados aparecem no cabeçalho e rodapé dos recibos e relatórios impressos.</p>
+  </div>
+
+  <form *ngIf="!loading" (ngSubmit)="save()" class="space-y-6 bg-white/80 dark:bg-gray-900/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <label class="md:col-span-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+        Razão social ou nome fantasia *
+        <input [(ngModel)]="company.name" name="name" required class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
+      </label>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        CNPJ/CPF
+        <input [(ngModel)]="company.document" name="document" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
+      </label>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Telefone
+        <input [(ngModel)]="company.phone" name="phone" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
+      </label>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        E-mail
+        <input type="email" [(ngModel)]="company.email" name="email" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
+      </label>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Endereço
+        <input [(ngModel)]="company.address" name="address" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
+      </label>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Cidade
+        <input [(ngModel)]="company.city" name="city" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
+      </label>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Estado
+        <input [(ngModel)]="company.state" name="state" maxlength="2" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
+      </label>
+      <label class="md:col-span-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+        Rodapé dos impressos
+        <textarea [(ngModel)]="company.printFooter" name="printFooter" rows="2" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" placeholder="Mensagem exibida ao final dos documentos"></textarea>
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4 border-t border-gray-200 dark:border-gray-700 pt-5">
+      <div class="w-24 h-24 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800">
+        <img *ngIf="company.logoData" [src]="company.logoData" alt="Logomarca da empresa" class="max-w-full max-h-full object-contain" />
+        <span *ngIf="!company.logoData" class="text-xs text-gray-400 text-center">Sem logo</span>
+      </div>
+      <label class="text-sm text-gray-700 dark:text-gray-300">
+        Logomarca
+        <input type="file" accept="image/*" (change)="onLogoSelected($event)" class="block mt-2 text-sm" />
+        <span class="block mt-1 text-xs text-gray-500">PNG, JPG ou WEBP, até 2 MB.</span>
+      </label>
+    </div>
+
+    <div class="flex items-center justify-between gap-4">
+      <p *ngIf="message" class="text-sm text-gray-600 dark:text-gray-300">{{ message }}</p>
+      <button type="submit" [disabled]="saving" class="ml-auto px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50">
+        {{ saving ? 'Salvando...' : 'Salvar empresa' }}
+      </button>
+    </div>
+  </form>
+</section>

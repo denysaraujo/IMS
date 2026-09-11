@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -8,7 +9,7 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   @Input() isMobileOpen = false;
   @Output() mobileClose = new EventEmitter<void>();
 
@@ -62,10 +63,28 @@ export class SidebarComponent {
           path: '/reports',
           icon: 'fas fa-chart-bar',
           badge: null
+        },
+        {
+          label: 'Empresa',
+          path: '/company',
+          icon: 'fas fa-building',
+          badge: null,
+          roles: ['ADMIN']
         }
       ]
     },
   ];
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    const role = this.authService.getCurrentUser()?.role?.toUpperCase();
+    const settings = this.menuItems.find(item => item.children);
+    if (settings?.children) {
+      settings.children = settings.children.filter(child => !child.roles || child.roles.includes(role || ''));
+      settings.isExpanded = role === 'ADMIN';
+    }
+  }
 
   // Alternar expansão do submenu
   toggleSubmenu(item: any): void {

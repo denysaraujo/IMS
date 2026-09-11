@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { InventoryService } from '../../services/inventory.service';
 import { ReportService } from '../../services/report.service';
 import { SaleService } from '../../services/sale.service';
+import { Company, CompanyService } from '../../services/company.service';
 
 @Component({
   selector: 'app-reports',
@@ -15,6 +16,7 @@ import { SaleService } from '../../services/sale.service';
 })
 export class ReportsComponent implements OnInit {
   currentUser: any = null;
+  company: Company | null = null;
 
   salesData = {
     totalSales: 0,
@@ -37,12 +39,39 @@ export class ReportsComponent implements OnInit {
     private router: Router,
     private reportService: ReportService,
     private inventoryService: InventoryService,
-    private saleService: SaleService
+    private saleService: SaleService,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit() {
     this.loadUserData();
+    this.companyService.load().subscribe({ next: company => this.company = company });
     this.loadReports();
+  }
+
+  printReport(): void {
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html><head><title>Relatório</title></head>
+      <body style="font-family:Arial,sans-serif;padding:24px;color:#111;">
+        ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" style="max-width:180px;max-height:80px;">` : ''}
+        <h1>${this.company?.name || 'Empresa'}</h1>
+        <p>${[this.company?.document, this.company?.phone, this.company?.email].filter(Boolean).join(' | ')}</p>
+        <p>${[this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', ')}</p>
+        <hr>
+        <h2>Relatório de vendas e estoque</h2>
+        <h3>Vendas</h3>
+        <p>Vendas totais: ${this.salesData.totalSales} | Receita: R$ ${this.salesData.totalRevenue.toFixed(2)} | Ticket médio: R$ ${this.salesData.averageSale.toFixed(2)} | Itens: ${this.salesData.itemsSold}</p>
+        <h3>Estoque</h3>
+        <p>Itens: ${this.inventoryData.totalItems} | Valor: R$ ${this.inventoryData.totalValue.toFixed(2)} | Estoque baixo: ${this.inventoryData.lowStock} | Sem estoque: ${this.inventoryData.outOfStock}</p>
+        <h3>Produtos mais vendidos</h3>
+        <ul>${this.topProducts.map(product => `<li>${product.name}: ${product.sold} vendas, R$ ${product.revenue.toFixed(2)}</li>`).join('')}</ul>
+        <hr><p>${this.company?.printFooter || ''}</p>
+      </body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 300);
   }
 
   loadUserData() {

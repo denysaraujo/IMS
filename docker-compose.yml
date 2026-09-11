@@ -69,7 +69,7 @@ services:
   web:
     build:
       context: ./web
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: sistema_web
     ports:
       - "80:80"

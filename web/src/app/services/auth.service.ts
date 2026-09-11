@@ -16,6 +16,10 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface RecoveryMessage {
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,7 +28,7 @@ export class AuthService {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private apiUrl = environment.apiUrl;
-  
+
   // ✅ Add reactive state management
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -41,9 +45,9 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, { 
-      username, 
-      password 
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, {
+      username,
+      password
     }).pipe(
       tap(response => {
         this.setSession(response.token, response.user);
@@ -52,11 +56,19 @@ export class AuthService {
     );
   }
 
+  requestPasswordRecovery(email: string): Observable<RecoveryMessage> {
+    return this.http.post<RecoveryMessage>(`${this.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<RecoveryMessage> {
+    return this.http.post<RecoveryMessage>(`${this.apiUrl}/auth/reset-password`, { token, newPassword });
+  }
+
   private setSession(token: string, user: User): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('auth_token', token);
       localStorage.setItem('current_user', JSON.stringify(user));
-      
+
       // ✅ Set token expiration (assuming JWT with 1 hour expiry)
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 1);
@@ -76,12 +88,12 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     if (!isPlatformBrowser(this.platformId)) return false;
-    
+
     const token = this.getToken();
     const expiresAt = localStorage.getItem('token_expires_at');
-    
+
     if (!token || !expiresAt) return false;
-    
+
     // ✅ Check token expiration
     return new Date() < new Date(expiresAt);
   }
@@ -99,7 +111,7 @@ export class AuthService {
     return null;
   }
 
-  getToken(): string | null { 
+  getToken(): string | null {
     if (isPlatformBrowser(this.platformId)) {
       return localStorage.getItem('auth_token');
     }

@@ -14,50 +14,56 @@ export class SidebarComponent {
 
   // Menu items dinâmicos
   menuItems = [
-    { 
-      label: 'Home', 
-      path: '/dashboard', 
+    {
+      label: 'Home',
+      path: '/dashboard',
       icon: 'fas fa-house',
-      badge: null 
+      badge: null
     },
-    { 
-      label: 'Vendas', 
-      path: '/sales', 
+    {
+      label: 'Vendas',
+      path: '/sales',
       icon: 'fas fa-shopping-cart',
-      badge: null 
-    },    
-    { 
-      label: 'Configurações', 
-      path: '/settings', 
+      badge: null
+    },
+    {
+      label: 'Locações',
+      path: '/rentals',
+      icon: 'fas fa-hand-holding-box',
+      badge: null
+    },
+    {
+      label: 'Configurações',
+      path: '/settings',
       icon: 'fas fa-cog',
       badge: null,
       isExpanded: false,
       children: [
-        { 
-          label: 'Clientes', 
-          path: '/customers', 
+        {
+          label: 'Clientes',
+          path: '/customers',
           icon: 'fas fa-user',
-          badge: null 
+          badge: null
         },
-        { 
-          label: 'Estoque', 
-          path: '/inventory', 
+        {
+          label: 'Estoque',
+          path: '/inventory',
           icon: 'fas fa-boxes',
-          badge: null 
+          badge: null
         },
-        { 
-          label: 'Usuários', 
-          path: '/users', 
+        {
+          label: 'Usuários',
+          path: '/users',
           icon: 'fas fa-users',
-          badge: null 
+          badge: null
         },
-        { 
-          label: 'Relatórios', 
-          path: '/reports', 
+        {
+          label: 'Relatórios',
+          path: '/reports',
           icon: 'fas fa-chart-bar',
-          badge: null 
+          badge: null
         }
-      ] 
+      ]
     },
   ];
 

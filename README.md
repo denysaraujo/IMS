@@ -40,3 +40,18 @@ Muitos sistemas de gerenciamento de estoque podem ser integrados com plataformas
 * Tomada de Decisões Baseada em Dados: Oferece informações estratégicas para otimizar a gestão do negócio.
 
 Esse sistema é essencial para empresas de qualquer porte ou segmento que buscam uma gestão eficiente, reduzindo perdas e melhorando a produtividade geral.
+
+## Recuperação de senha
+
+Para habilitar o envio de tokens de recuperação no Docker, configure as variáveis SMTP no arquivo `.env`:
+
+```dotenv
+SPRING_MAIL_HOST=smtp.seu-provedor.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=seu-usuario
+SPRING_MAIL_PASSWORD=sua-senha-ou-app-password
+SPRING_MAIL_SMTP_AUTH=true
+SPRING_MAIL_SMTP_STARTTLS=true
+```
+
+O token enviado por e-mail expira em 15 minutos e pode ser usado uma única vez.

@@ -279,10 +279,18 @@ export class SalesComponent implements OnInit {
     if (printWindow) {
       printWindow.document.write(`
         <html>
-          <head><title>Recibo</title></head>
-          <body style="font-family: Arial, sans-serif; padding: 20px;">
-            ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" style="max-width:180px;max-height:80px;display:block;margin:0 auto 16px;">` : ''}
-            <h2 style="text-align:center;margin:0;">${this.company?.name || 'Empresa'}</h2>
+          <head>
+            <title>Recibo de venda</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
+              pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
+              .logo { display: block; max-width: 180px; max-height: 80px; margin: 0 auto 16px; }
+              .company-name { text-align: center; margin: 0 0 12px; font-size: 20px; }
+            </style>
+          </head>
+          <body>
+            ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" class="logo">` : ''}
+            <h2 class="company-name">${this.company?.name || 'Empresa'}</h2>
             <pre>${receipt}</pre>
           </body>
         </html>

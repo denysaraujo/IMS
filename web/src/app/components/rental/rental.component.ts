@@ -224,6 +224,9 @@ export class RentalComponent implements OnInit {
   }
 
   generateReceipt(rental: any): string {
+    const startDate = rental.startDate ? new Date(rental.startDate).toLocaleDateString('pt-BR') : 'Não informado';
+    const endDate = rental.returnDate ? new Date(rental.returnDate).toLocaleDateString('pt-BR') : 'Em aberto';
+
     return [
       this.company?.name || 'Empresa',
       [this.company?.document, this.company?.phone].filter(Boolean).join(' | '),
@@ -237,29 +240,70 @@ export class RentalComponent implements OnInit {
       `Quantidade: ${rental.quantity}`,
       `Valor diário: R$ ${Number(rental.dailyRate || 0).toFixed(2)}`,
       `Período: ${rental.rentalDays} dias`,
+      `Data de início: ${startDate}`,
+      `Data de devolução: ${endDate}`,
       `Total: R$ ${Number(rental.totalAmount || 0).toFixed(2)}`,
       '================',
       this.company?.printFooter || 'Obrigado pela preferência!'
     ].join('\n');
   }
 
-  printReceipt(rental: any): void {
-    const receipt = this.generateReceipt(rental);
+  generateReturnReceipt(rental: any): string {
+    const returnedAt = rental.returnDate ? new Date(rental.returnDate).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
+
+    return [
+      this.company?.name || 'Empresa',
+      [this.company?.document, this.company?.phone].filter(Boolean).join(' | '),
+      [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', '),
+      '',
+      'RECIBO DE DEVOLUÇÃO DE LOCAÇÃO',
+      '================',
+      `Código: ${rental.rentalCode}`,
+      `Cliente: ${rental.customerName}`,
+      `Produto: ${rental.productName}`,
+      `Quantidade: ${rental.quantity}`,
+      `Data da devolução: ${returnedAt}`,
+      `Valor total locado: R$ ${Number(rental.totalAmount || 0).toFixed(2)}`,
+      `Status: ${rental.status === 'RETURNED' ? 'Devolvido' : 'Concluído'}`,
+      '================',
+      this.company?.printFooter || 'Obrigado pela preferência!'
+    ].join('\n');
+  }
+
+  private openReceiptWindow(title: string, receipt: string): void {
     const printWindow = window.open('', '_blank', 'width=500,height=700');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head><title>Recibo de locação</title></head>
-          <body style="font-family: Arial, sans-serif; padding: 20px;">
-            ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" style="max-width:180px;max-height:80px;display:block;margin:0 auto 16px;">` : ''}
-            <h2 style="text-align:center;margin:0;">${this.company?.name || 'Empresa'}</h2>
-            <pre>${receipt}</pre>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => printWindow.print(), 300);
+    if (!printWindow) {
+      return;
     }
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
+            pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
+            .logo { display: block; max-width: 180px; max-height: 80px; margin: 0 auto 16px; }
+            .company-name { text-align: center; margin: 0 0 12px; font-size: 20px; }
+          </style>
+        </head>
+        <body>
+          ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" class="logo">` : ''}
+          <h2 class="company-name">${this.company?.name || 'Empresa'}</h2>
+          <pre>${receipt}</pre>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 300);
+  }
+
+  printReceipt(rental: any): void {
+    this.openReceiptWindow('Recibo de locação', this.generateReceipt(rental));
+  }
+
+  printReturnReceipt(rental: any): void {
+    this.openReceiptWindow('Recibo de devolução de locação', this.generateReturnReceipt(rental));
   }
 }

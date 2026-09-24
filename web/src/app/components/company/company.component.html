@@ -1,63 +1,170 @@
-<section class="p-6 max-w-4xl mx-auto">
-  <div class="mb-6">
-    <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Administração</p>
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Empresa e documentos</h1>
-    <p class="text-gray-600 dark:text-gray-300">Esses dados aparecem no cabeçalho e rodapé dos recibos e relatórios impressos.</p>
-  </div>
-
-  <form *ngIf="!loading" (ngSubmit)="save()" class="space-y-6 bg-white/80 dark:bg-gray-900/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <label class="md:col-span-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        Razão social ou nome fantasia *
-        <input [(ngModel)]="company.name" name="name" required class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
-      </label>
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        CNPJ/CPF
-        <input [(ngModel)]="company.document" name="document" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
-      </label>
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        Telefone
-        <input [(ngModel)]="company.phone" name="phone" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
-      </label>
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        E-mail
-        <input type="email" [(ngModel)]="company.email" name="email" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
-      </label>
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        Endereço
-        <input [(ngModel)]="company.address" name="address" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
-      </label>
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        Cidade
-        <input [(ngModel)]="company.city" name="city" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
-      </label>
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        Estado
-        <input [(ngModel)]="company.state" name="state" maxlength="2" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" />
-      </label>
-      <label class="md:col-span-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        Rodapé dos impressos
-        <textarea [(ngModel)]="company.printFooter" name="printFooter" rows="2" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800" placeholder="Mensagem exibida ao final dos documentos"></textarea>
-      </label>
-    </div>
-
-    <div class="flex flex-col sm:flex-row sm:items-center gap-4 border-t border-gray-200 dark:border-gray-700 pt-5">
-      <div class="w-24 h-24 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800">
-        <img *ngIf="company.logoData" [src]="company.logoData" alt="Logomarca da empresa" class="max-w-full max-h-full object-contain" />
-        <span *ngIf="!company.logoData" class="text-xs text-gray-400 text-center">Sem logo</span>
+<section class="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
+  <main class="max-w-5xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl overflow-hidden">
+        <div class="px-6 py-5 sm:p-6">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Administração</p>
+              <h1 class="mt-2 text-2xl font-bold text-gray-800 dark:text-white">Empresa e documentos</h1>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                Esses dados aparecem no cabeçalho e rodapé dos recibos e relatórios impressos.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-      <label class="text-sm text-gray-700 dark:text-gray-300">
-        Logomarca
-        <input type="file" accept="image/*" (change)="onLogoSelected($event)" class="block mt-2 text-sm" />
-        <span class="block mt-1 text-xs text-gray-500">PNG, JPG ou WEBP, até 2 MB.</span>
-      </label>
     </div>
 
-    <div class="flex items-center justify-between gap-4">
-      <p *ngIf="message" class="text-sm text-gray-600 dark:text-gray-300">{{ message }}</p>
-      <button type="submit" [disabled]="saving" class="ml-auto px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50">
-        {{ saving ? 'Salvando...' : 'Salvar empresa' }}
-      </button>
+    <div *ngIf="loading" class="px-4 py-6 sm:px-0">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg p-6">
+        <div class="animate-pulse space-y-4">
+          <div class="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+          <div class="h-10 w-full rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="h-10 rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+            <div class="h-10 rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+            <div class="h-10 rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+            <div class="h-10 rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+          </div>
+        </div>
+      </div>
     </div>
-  </form>
+
+    <div *ngIf="!loading" class="mt-8 px-4 sm:px-0">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">Dados da empresa</h2>
+        </div>
+
+        <div class="p-6">
+          <form (ngSubmit)="save()" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Razão social ou nome fantasia *
+                </label>
+                <input
+                  [(ngModel)]="company.name"
+                  name="name"
+                  required
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  CNPJ/CPF
+                </label>
+                <input
+                  [(ngModel)]="company.document"
+                  name="document"
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Telefone
+                </label>
+                <input
+                  [(ngModel)]="company.phone"
+                  name="phone"
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  E-mail
+                </label>
+                <input
+                  type="email"
+                  [(ngModel)]="company.email"
+                  name="email"
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Endereço
+                </label>
+                <input
+                  [(ngModel)]="company.address"
+                  name="address"
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Cidade
+                </label>
+                <input
+                  [(ngModel)]="company.city"
+                  name="city"
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Estado
+                </label>
+                <input
+                  [(ngModel)]="company.state"
+                  name="state"
+                  maxlength="2"
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 uppercase"
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Rodapé dos impressos
+                </label>
+                <textarea
+                  [(ngModel)]="company.printFooter"
+                  name="printFooter"
+                  rows="3"
+                  placeholder="Mensagem exibida ao final dos documentos"
+                  class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
+              <div class="w-24 h-24 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800 shadow-sm">
+                <img *ngIf="company.logoData" [src]="company.logoData" alt="Logomarca da empresa" class="max-w-full max-h-full object-contain" />
+                <span *ngIf="!company.logoData" class="px-2 text-center text-xs text-gray-400">Sem logo</span>
+              </div>
+
+              <label class="block text-sm text-gray-700 dark:text-gray-300">
+                Logomarca
+                <input
+                  type="file"
+                  accept="image/*"
+                  (change)="onLogoSelected($event)"
+                  class="mt-2 block w-full text-sm text-gray-600 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-200"
+                />
+                <span class="mt-1 block text-xs text-gray-500">PNG, JPG ou WEBP, até 2 MB.</span>
+              </label>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
+              <p *ngIf="message" class="text-sm text-gray-600 dark:text-gray-300">{{ message }}</p>
+              <button
+                type="submit"
+                [disabled]="saving"
+                class="sm:ml-auto inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ saving ? 'Salvando...' : 'Salvar empresa' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
 </section>

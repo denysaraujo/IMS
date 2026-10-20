@@ -16,7 +16,7 @@ export interface Inventory {
 
 export interface InventoryItem {
   id?: number;
-  productCode: string;
+  productCode: string | null;
   productName: string;
   description?: string;
   category: string;
@@ -41,6 +41,10 @@ export class InventoryService {
     return this.http.get<Inventory[]>(this.apiUrl);
   }
 
+  createInventory(inventory: Pick<Inventory, 'name' | 'location' | 'category'> & Partial<Pick<Inventory, 'description'>>): Observable<Inventory> {
+    return this.http.post<Inventory>(this.apiUrl, inventory);
+  }
+
   getItems(): Observable<InventoryItem[]> {
     return this.http.get<InventoryItem[]>(`${this.apiUrl}/items`);
   }
@@ -51,6 +55,10 @@ export class InventoryService {
 
   createItem(inventoryId: number, item: InventoryItem): Observable<InventoryItem> {
     return this.http.post<InventoryItem>(`${this.apiUrl}/items/inventory/${inventoryId}`, item);
+  }
+
+  updateItem(id: number, item: InventoryItem): Observable<InventoryItem> {
+    return this.http.put<InventoryItem>(`${this.apiUrl}/items/${id}`, item);
   }
 
   updateStock(id: number, quantityChange: number): Observable<InventoryItem> {

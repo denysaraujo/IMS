@@ -67,7 +67,7 @@ public class InventoryItemService {
         Inventory inventory = inventoryRepository.findById(inventoryId)
             .orElseThrow(() -> new RuntimeException("Inventário não encontrado com id: " + inventoryId));
         
-        item.setInventory(inventory);
+        inventory.addItem(item);
         InventoryItem savedItem = inventoryItemRepository.save(item);
         
         // Atualizar totais do inventário
@@ -81,6 +81,7 @@ public class InventoryItemService {
     public InventoryItem updateInventoryItem(Long id, InventoryItem itemDetails) {
         return inventoryItemRepository.findById(id)
             .map(item -> {
+                item.setProductCode(itemDetails.getProductCode());
                 item.setProductName(itemDetails.getProductName());
                 item.setDescription(itemDetails.getDescription());
                 item.setCategory(itemDetails.getCategory());

@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    
+
     <!-- Welcome Section -->
     <div class="px-4 py-6 sm:px-0">
       <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl overflow-hidden">
@@ -12,8 +12,8 @@
                 👋 Bem-vindo, {{ getDisplayName() }}!
               </h2>
               <p class="text-gray-600 dark:text-gray-300">
-                Você está logado como 
-                <span class="font-semibold text-blue-600 dark:text-blue-400">{{ getFormattedRole() }}</span>. 
+                Você está logado como
+                <span class="font-semibold text-blue-600 dark:text-blue-400">{{ getFormattedRole() }}</span>.
                 Aqui está um resumo das atividades do sistema.
               </p>
             </div>
@@ -29,8 +29,8 @@
 
     <!-- Stats Grid -->
     <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <div 
-        *ngFor="let stat of stats" 
+      <div
+        *ngFor="let stat of stats"
         class="group bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
       >
         <div class="p-6">
@@ -74,7 +74,7 @@
         </div>
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div *ngFor="let alert of lowStockAlerts" 
+            <div *ngFor="let alert of lowStockAlerts"
                  class="p-4 bg-yellow-50/50 dark:bg-yellow-900/20 border border-yellow-200/50 dark:border-yellow-700/50 rounded-xl">
               <div class="flex items-center justify-between">
                 <div>
@@ -95,7 +95,7 @@
 
     <!-- User Details & Activities -->
     <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
+
       <!-- Informações do Usuário -->
       <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
@@ -115,7 +115,7 @@
             </div>
             <i class="fas fa-user text-blue-500"></i>
           </div>
-          
+
           <div class="flex items-center justify-between py-2">
             <div>
               <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Usuário</label>
@@ -125,7 +125,7 @@
             </div>
             <i class="fas fa-at text-purple-500"></i>
           </div>
-          
+
           <div class="flex items-center justify-between py-2">
             <div>
               <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Permissão</label>
@@ -137,7 +137,7 @@
             </div>
             <i class="fas fa-shield-alt text-green-500"></i>
           </div>
-          
+
           <div class="flex items-center justify-between py-2">
             <div>
               <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Último acesso</label>
@@ -174,7 +174,7 @@
             </div>
 
             <!-- Activity 2 - Alerta de Estoque -->
-            <div *ngIf="alertSummary.lowStockAlerts > 0" 
+            <div *ngIf="alertSummary.lowStockAlerts > 0"
                  class="flex items-start space-x-4 p-4 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/20 border border-yellow-200/50 dark:border-yellow-700/50">
               <div class="flex-shrink-0 w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
                 <i class="fas fa-exclamation-triangle text-white text-sm"></i>
@@ -184,7 +184,7 @@
                 <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   {{ alertSummary.lowStockAlerts }} produto(s) com estoque baixo
                 </p>
-                <button (click)="navigateToInventory()" 
+                <button (click)="navigateToInventory()"
                         class="mt-2 text-xs text-yellow-600 dark:text-yellow-400 hover:text-yellow-500 font-medium">
                   Ver estoque →
                 </button>
@@ -225,20 +225,21 @@
               <i class="fas fa-plus text-lg mb-2"></i>
               <p class="text-sm font-medium">Novo Produto</p>
             </button>
-            
+
             <button (click)="navigateToSales()"
                     class="group p-4 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-shopping-cart text-lg mb-2"></i>
-              <p class="text-sm font-medium">Nova 'Venda</p>
+              <p class="text-sm font-medium">Nova Venda</p>
             </button>
-            
+
             <button (click)="navigateToInventory()"
                     class="group p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-boxes text-lg mb-2"></i>
               <p class="text-sm font-medium">Ver Estoque</p>
             </button>
-            
-            <button class="group p-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+
+            <button (click)="navigateToSettings()"
+                    class="group p-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-cog text-lg mb-2"></i>
               <p class="text-sm font-medium">Configurações</p>
             </button>

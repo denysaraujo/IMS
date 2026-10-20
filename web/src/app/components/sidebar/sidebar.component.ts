@@ -41,6 +41,12 @@ export class SidebarComponent implements OnInit {
       isExpanded: false,
       children: [
         {
+          label: 'Usuários',
+          path: '/users',
+          icon: 'fas fa-users',
+          badge: null
+        },
+        {
           label: 'Clientes',
           path: '/customers',
           icon: 'fas fa-user',
@@ -50,12 +56,6 @@ export class SidebarComponent implements OnInit {
           label: 'Estoque',
           path: '/inventory',
           icon: 'fas fa-boxes',
-          badge: null
-        },
-        {
-          label: 'Usuários',
-          path: '/users',
-          icon: 'fas fa-users',
           badge: null
         },
         {

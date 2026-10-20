@@ -1,5 +1,6 @@
 package com.br.api.model.inventory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class Inventory {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<InventoryItem> items = new ArrayList<>();
 
     // Construtores

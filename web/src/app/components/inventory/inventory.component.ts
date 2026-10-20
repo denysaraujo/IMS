@@ -2,8 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { of, switchMap, tap, throwError } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { Inventory, InventoryItem, InventoryService } from '../../services/inventory.service';
+
+type InventoryItemView = InventoryItem & {
+  code: string | null;
+  name: string;
+  minStock: number;
+  maxStock: number;
+  barcode: string | null;
+};
 
 @Component({
   selector: 'app-inventory',
@@ -14,9 +23,13 @@ import { Inventory, InventoryItem, InventoryService } from '../../services/inven
 })
 export class InventoryComponent implements OnInit {
   currentUser: any = null;
-  inventoryItems: any[] = [];
+  inventoryItems: InventoryItemView[] = [];
   categories: string[] = [];
   inventories: Inventory[] = [];
+  isLoadingInventories = false;
+  isSavingProduct = false;
+  editingBarcodeItemId: number | null = null;
+  editedBarcode = '';
   newProduct = {
     barcode: '',
     name: '',
@@ -47,6 +60,11 @@ export class InventoryComponent implements OnInit {
     this.loadInventory();
   }
 
+  focusNewProductForm(input: HTMLInputElement): void {
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input.focus();
+  }
+
   loadUserData() {
     this.currentUser = this.authService.getCurrentUser();
 
@@ -56,9 +74,16 @@ export class InventoryComponent implements OnInit {
   }
 
   loadInventory() {
+    this.isLoadingInventories = true;
     this.inventoryService.getInventories().subscribe({
-      next: inventories => this.inventories = inventories,
-      error: error => console.error('Erro ao carregar inventários:', error)
+      next: inventories => {
+        this.inventories = inventories;
+        this.isLoadingInventories = false;
+      },
+      error: error => {
+        this.isLoadingInventories = false;
+        console.error('Erro ao carregar inventários:', error);
+      }
     });
 
     this.inventoryService.getItems().subscribe({
@@ -70,7 +95,7 @@ export class InventoryComponent implements OnInit {
     });
   }
 
-  private toViewItem(item: InventoryItem): any {
+  private toViewItem(item: InventoryItem): InventoryItemView {
     return {
       ...item,
       code: item.productCode,
@@ -82,12 +107,12 @@ export class InventoryComponent implements OnInit {
   }
 
   applyBarcodeToInventoryProduct(barcode: string) {
-    const normalized = barcode?.trim();
+    const normalized = barcode?.trim() ?? '';
+    this.newProduct.barcode = normalized;
     if (!normalized) {
       return;
     }
 
-    this.newProduct.barcode = normalized;
     const item = this.barcodeCatalog[normalized];
     if (item) {
       this.newProduct.name = item.name;
@@ -129,19 +154,17 @@ export class InventoryComponent implements OnInit {
   }
 
   addInventoryProduct() {
-    if (!this.newProduct.barcode || !this.newProduct.name || this.newProduct.quantity <= 0) {
-      alert('Informe o código de barras e o nome do produto para cadastrar.');
+    if (this.isSavingProduct || this.isLoadingInventories) {
       return;
     }
 
-    const inventoryId = this.inventories[0]?.id;
-    if (!inventoryId) {
-      alert('Nenhum inventário disponível para receber o produto.');
+    if (!this.newProduct.name.trim() || this.newProduct.quantity <= 0) {
+      alert('Informe o nome do produto e uma quantidade maior que zero para cadastrar.');
       return;
     }
 
     const item: InventoryItem = {
-      productCode: this.newProduct.barcode,
+      productCode: this.newProduct.barcode.trim() || null,
       productName: this.newProduct.name,
       category: this.newProduct.category,
       quantity: this.newProduct.quantity,
@@ -151,16 +174,88 @@ export class InventoryComponent implements OnInit {
       expirationDate: '2099-12-31'
     };
 
-    this.inventoryService.createItem(inventoryId, item).subscribe({
+    const inventory$ = this.inventories[0]
+      ? of(this.inventories[0])
+      : this.inventoryService.createInventory({
+          name: 'Estoque principal',
+          location: 'Loja',
+          category: 'Geral'
+        }).pipe(
+          tap(inventory => this.inventories = [inventory, ...this.inventories])
+        );
+
+    this.isSavingProduct = true;
+    inventory$.pipe(
+      switchMap(inventory => {
+        if (inventory.id == null) {
+          return throwError(() => new Error('A API criou um inventário sem retornar seu identificador.'));
+        }
+        return this.inventoryService.createItem(inventory.id, item);
+      })
+    ).subscribe({
       next: created => {
+        this.isSavingProduct = false;
         this.inventoryItems.unshift(this.toViewItem(created));
         this.categories = [...new Set(this.inventoryItems.map(entry => entry.category))];
         this.resetNewProduct();
         alert('Produto cadastrado com sucesso no estoque.');
       },
       error: error => {
+        this.isSavingProduct = false;
         console.error('Erro ao cadastrar produto:', error);
         alert('Não foi possível cadastrar o produto no estoque.');
+      }
+    });
+  }
+
+  editBarcode(item: InventoryItemView): void {
+    if (item.id == null) {
+      return;
+    }
+
+    this.editingBarcodeItemId = item.id;
+    this.editedBarcode = item.productCode ?? '';
+  }
+
+  cancelBarcodeEdit(): void {
+    this.editingBarcodeItemId = null;
+    this.editedBarcode = '';
+  }
+
+  saveBarcode(item: InventoryItemView): void {
+    if (item.id == null) {
+      return;
+    }
+
+    const updatedItem: InventoryItem = {
+      id: item.id,
+      productCode: this.editedBarcode.trim() || null,
+      productName: item.productName,
+      description: item.description,
+      category: item.category,
+      quantity: item.quantity,
+      minStockLevel: item.minStockLevel,
+      maxStockLevel: item.maxStockLevel,
+      unitPrice: item.unitPrice,
+      supplier: item.supplier,
+      location: item.location,
+      status: item.status,
+      expirationDate: item.expirationDate,
+      inventory: item.inventory
+    };
+
+    this.inventoryService.updateItem(item.id, updatedItem).subscribe({
+      next: savedItem => {
+        const index = this.inventoryItems.findIndex(entry => entry.id === savedItem.id);
+        if (index !== -1) {
+          this.inventoryItems[index] = this.toViewItem(savedItem);
+        }
+        this.cancelBarcodeEdit();
+        alert('Código de barras atualizado com sucesso.');
+      },
+      error: error => {
+        console.error('Erro ao atualizar código de barras:', error);
+        alert('Não foi possível atualizar o código de barras.');
       }
     });
   }

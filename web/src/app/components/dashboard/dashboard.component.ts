@@ -18,27 +18,27 @@ export class DashboardComponent implements OnInit {
   lowStockAlerts: InventoryItem[] = [];
 
   stats = [
-    { 
-      title: 'Total de Usuários', 
-      value: '0', 
+    {
+      title: 'Total de Usuários',
+      value: '0',
       icon: '👥',
       trend: '+12%'
     },
-    { 
-      title: 'Pedidos Hoje', 
-      value: '0', 
+    {
+      title: 'Pedidos Hoje',
+      value: '0',
       icon: '🛒',
       trend: '+5%'
     },
-    { 
-      title: 'Mensagens', 
-      value: '0', 
+    {
+      title: 'Mensagens',
+      value: '0',
       icon: '💬',
       trend: '-2%'
     },
-    { 
-      title: 'Alertas', 
-      value: '0', 
+    {
+      title: 'Alertas',
+      value: '0',
       icon: '⚠️',
       trend: '0%'
     },
@@ -64,7 +64,7 @@ export class DashboardComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
-    
+
     if (!this.currentUser) {
       this.router.navigate(['/login']);
     }
@@ -94,7 +94,7 @@ export class DashboardComponent implements OnInit {
       return this.currentUser.nomeCompleto;
     }
     if (this.currentUser?.username) {
-      return this.currentUser.username.charAt(0).toUpperCase() + 
+      return this.currentUser.username.charAt(0).toUpperCase() +
              this.currentUser.username.slice(1);
     }
     return 'Usuário';
@@ -120,4 +120,10 @@ export class DashboardComponent implements OnInit {
   navigateToSales() {
     this.router.navigate(['/sales']);
   }
+
+  // Navegação para configurações
+  navigateToSettings() {
+    this.router.navigate(['/users']);
+  }
+
 }

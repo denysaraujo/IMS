@@ -15,8 +15,12 @@ export interface Sale {
 }
 
 export interface SaleItem {
-  productCode: string;
+  id?: number;
+  inventoryItemId?: number;
+  productCode: string | null;
   productName: string;
+  category?: string;
+  description?: string;
   quantity: number;
   unitPrice: number;
 }

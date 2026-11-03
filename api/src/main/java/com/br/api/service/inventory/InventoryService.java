@@ -77,7 +77,9 @@ public class InventoryService {
 
     @Transactional
     public void deleteInventory(Long id) {
-        inventoryRepository.deleteById(id);
+        Inventory inventory = inventoryRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Inventário não encontrado com id: " + id));
+        inventoryRepository.delete(inventory);
     }
 
     public Object[] getInventorySummary() {

@@ -47,7 +47,7 @@ public class InventoryItemService {
     }
 
     public List<InventoryItem> findByInventoryId(Long inventoryId) {
-        return inventoryItemRepository.findByInventoryId(inventoryId);
+        return inventoryItemRepository.findByInventory_Id(inventoryId);
     }
 
     public List<InventoryItem> getLowStockItems() {
@@ -91,13 +91,27 @@ public class InventoryItemService {
                 item.setUnitPrice(itemDetails.getUnitPrice());
                 item.setSupplier(itemDetails.getSupplier());
                 item.setLocation(itemDetails.getLocation());
+                if (itemDetails.getExpirationDate() != null) {
+                    item.setExpirationDate(itemDetails.getExpirationDate());
+                }
+
+                Inventory originalInventory = item.getInventory();
+                Inventory updatedInventory = originalInventory;
+                Long requestedInventoryId = itemDetails.getInventoryId();
+                if (requestedInventoryId != null && !requestedInventoryId.equals(originalInventory.getId())) {
+                    updatedInventory = inventoryRepository.findById(requestedInventoryId)
+                        .orElseThrow(() -> new RuntimeException("Inventário não encontrado com id: " + requestedInventoryId));
+                    originalInventory.removeItem(item);
+                    updatedInventory.addItem(item);
+                }
                 
                 InventoryItem updatedItem = inventoryItemRepository.save(item);
-                
-                // Atualizar totais do inventário
-                if (item.getInventory() != null) {
-                    item.getInventory().calculateTotals();
-                    inventoryRepository.save(item.getInventory());
+
+                originalInventory.calculateTotals();
+                inventoryRepository.save(originalInventory);
+                if (updatedInventory != originalInventory) {
+                    updatedInventory.calculateTotals();
+                    inventoryRepository.save(updatedInventory);
                 }
                 
                 return updatedItem;
@@ -134,13 +148,13 @@ public class InventoryItemService {
             .orElseThrow(() -> new RuntimeException("Item de inventário não encontrado com id: " + id));
         
         Inventory inventory = item.getInventory();
-        inventoryItemRepository.deleteById(id);
-        
-        // Atualizar totais do inventário
         if (inventory != null) {
+            inventory.getItems().remove(item);
             inventory.calculateTotals();
             inventoryRepository.save(inventory);
         }
+
+        inventoryItemRepository.delete(item);
     }
 
     public List<Object[]> getItemsSummaryByCategory() {

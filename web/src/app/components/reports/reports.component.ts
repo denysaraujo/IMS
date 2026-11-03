@@ -114,15 +114,16 @@ export class ReportsComponent implements OnInit {
       next: sales => {
         const products = new Map<string, { name: string; category: string; sold: number; revenue: number }>();
         sales.forEach(sale => sale.items?.forEach(item => {
-          const current = products.get(item.productCode) || {
+          const productKey = String(item.inventoryItemId ?? item.productCode ?? item.productName);
+          const current = products.get(productKey) || {
             name: item.productName,
-            category: 'Produtos',
+            category: item.category || 'Produtos',
             sold: 0,
             revenue: 0
           };
           current.sold += item.quantity;
           current.revenue += item.quantity * item.unitPrice;
-          products.set(item.productCode, current);
+          products.set(productKey, current);
         }));
         this.topProducts = [...products.values()].sort((a, b) => b.sold - a.sold).slice(0, 5);
       },

@@ -18,10 +18,15 @@ import { Company, CompanyService } from '../../services/company.service';
 export class SalesComponent implements OnInit {
   currentUser: any = null;
   company: Company | null = null;
-  sales: any[] = []; // Usei any[] temporariamente para evitar erros
+  sales: Sale[] = [];
   customers: Customer[] = [];
+  inventoryProducts: InventoryItem[] = [];
+  selectedInventoryItemId: number | null = null;
+  barcodeLookup = '';
   selectedCustomer: Customer | null = null;
   isCreatingSale: boolean = false;
+  isProcessingSale = false;
+  readonly cancelingSaleIds = new Set<number>();
 
   // newSale inicializado corretamente
   newSale: Sale = {
@@ -41,15 +46,6 @@ export class SalesComponent implements OnInit {
     unitPrice: 0
   };
 
-  readonly barcodeCatalog: Record<string, { productName: string; unitPrice: number }> = {
-    '7891234560011': { productName: 'Notebook Dell Inspiron', unitPrice: 3499.99 },
-    '7891234560028': { productName: 'Mouse Logitech MX', unitPrice: 299.90 },
-    '7891234560035': { productName: 'Teclado Mecânico', unitPrice: 450.00 },
-    '7891234560042': { productName: 'Monitor 24" Samsung', unitPrice: 899.99 },
-    '7891234560059': { productName: 'Cadeira Gamer', unitPrice: 1200.00 },
-    '7891234560066': { productName: 'Headphone Sony', unitPrice: 350.00 }
-  };
-
   constructor(
     private authService: AuthService,
     private saleService: SaleService,
@@ -63,7 +59,11 @@ export class SalesComponent implements OnInit {
     this.loadUserData();
     this.loadSales();
     this.loadCustomers();
-    this.companyService.load().subscribe({ next: company => this.company = company });
+    this.loadInventoryProducts();
+    this.companyService.load().subscribe({
+      next: company => this.company = company,
+      error: error => console.error('Erro ao carregar os dados da empresa para o comprovante:', error)
+    });
     this.generateSaleCode();
   }
 
@@ -91,6 +91,16 @@ export class SalesComponent implements OnInit {
     });
   }
 
+  loadInventoryProducts(): void {
+    this.inventoryService.getItems().subscribe({
+      next: products => this.inventoryProducts = products,
+      error: error => {
+        console.error('Erro ao carregar produtos do estoque para a venda:', error);
+        alert('Não foi possível carregar os produtos do estoque.');
+      }
+    });
+  }
+
   generateSaleCode() {
     const timestamp = new Date().getTime();
     this.newSale.saleCode = `V${timestamp}`;
@@ -110,27 +120,42 @@ export class SalesComponent implements OnInit {
     this.selectedCustomer = null;
   }
 
-  applyBarcodeToSaleItem(barcode: string) {
-    const normalized = barcode?.trim();
-    if (!normalized) {
+  selectInventoryProduct(inventoryItemId: number | null): void {
+    this.selectedInventoryItemId = inventoryItemId;
+    const product = this.inventoryProducts.find(item => item.id === inventoryItemId);
+    if (!product) {
+      this.newItem = { productCode: '', productName: '', quantity: 1, unitPrice: 0 };
       return;
     }
 
-    this.newItem.productCode = normalized;
-    const item = this.barcodeCatalog[normalized];
-    if (item) {
-      this.newItem.productName = item.productName;
-      this.newItem.unitPrice = item.unitPrice;
+    this.newItem = {
+      inventoryItemId: product.id,
+      productCode: product.productCode,
+      productName: product.productName,
+      category: product.category,
+      description: product.description,
+      quantity: 1,
+      unitPrice: product.unitPrice
+    };
+  }
+
+  get selectedInventoryProduct(): InventoryItem | undefined {
+    return this.inventoryProducts.find(item => item.id === this.selectedInventoryItemId);
+  }
+
+  applyBarcodeToSaleItem(barcode: string): void {
+    this.barcodeLookup = barcode?.trim() ?? '';
+    if (!this.barcodeLookup) {
       return;
     }
 
-    this.inventoryService.getItemByCode(normalized).subscribe({
-      next: (inventoryItem: InventoryItem) => {
-        this.newItem.productName = inventoryItem.productName;
-        this.newItem.unitPrice = inventoryItem.unitPrice;
-      },
-      error: () => console.warn('Produto não encontrado para o código:', normalized)
-    });
+    const product = this.inventoryProducts.find(item => item.productCode === this.barcodeLookup);
+    if (!product) {
+      alert('Produto não encontrado no estoque.');
+      return;
+    }
+
+    this.selectInventoryProduct(product.id ?? null);
   }
 
   async readBarcodeFromDevice() {
@@ -164,16 +189,27 @@ export class SalesComponent implements OnInit {
     }
   }
 
-  addItem() {
-    if (this.newItem.productCode && this.newItem.productName && this.newItem.quantity > 0 && this.newItem.unitPrice > 0) {
+  addItem(): void {
+    const product = this.inventoryProducts.find(item => item.id === this.selectedInventoryItemId);
+    if (!product) {
+      alert('Selecione um produto cadastrado no estoque.');
+      return;
+    }
+    const quantityAlreadyInSale = this.newSale.items
+      .filter(item => item.inventoryItemId === product.id)
+      .reduce((total, item) => total + item.quantity, 0);
+    if (!Number.isInteger(this.newItem.quantity) || this.newItem.quantity <= 0
+        || quantityAlreadyInSale + this.newItem.quantity > product.quantity
+        || !Number.isFinite(this.newItem.unitPrice) || this.newItem.unitPrice < 0) {
+      alert('Confira a quantidade disponível e o valor unitário informado.');
+      return;
+    }
+
+    if (product.id != null) {
       this.newSale.items.push({...this.newItem});
       this.calculateTotal();
-      this.newItem = {
-        productCode: '',
-        productName: '',
-        quantity: 1,
-        unitPrice: 0
-      };
+      this.selectInventoryProduct(null);
+      this.barcodeLookup = '';
     }
   }
 
@@ -194,7 +230,10 @@ export class SalesComponent implements OnInit {
   }
 
   processSale() {
-    if (!this.selectedCustomer) {
+    if (this.isProcessingSale) {
+      return;
+    }
+    if (this.selectedCustomer?.id == null) {
       alert('Selecione um cliente para a venda');
       return;
     }
@@ -204,16 +243,48 @@ export class SalesComponent implements OnInit {
       return;
     }
 
+    this.newSale.customer = this.selectedCustomer;
+    this.isProcessingSale = true;
     this.saleService.createSale(this.newSale).subscribe({
       next: (sale) => {
+        this.isProcessingSale = false;
         alert('Venda processada com sucesso!');
         this.sales = [sale, ...this.sales];
         this.isCreatingSale = false;
         this.selectedCustomer = null;
+        this.loadInventoryProducts();
       },
       error: (error) => {
+        this.isProcessingSale = false;
         console.error('Erro ao processar venda:', error);
         alert('Erro ao processar venda: ' + (error.error?.message || error.message));
+      }
+    });
+  }
+
+  cancelSale(sale: Sale): void {
+    if (sale.id == null || sale.status !== 'COMPLETED' || this.cancelingSaleIds.has(sale.id)) {
+      return;
+    }
+    if (!window.confirm(`Cancelar a venda "${sale.saleCode}" e devolver os produtos ao estoque?`)) {
+      return;
+    }
+
+    const saleId = sale.id;
+    this.cancelingSaleIds.add(saleId);
+    this.saleService.cancelSale(saleId).subscribe({
+      next: () => {
+        this.cancelingSaleIds.delete(saleId);
+        this.sales = this.sales.map(entry =>
+          entry.id === saleId ? { ...entry, status: 'CANCELLED' } : entry
+        );
+        this.loadInventoryProducts();
+        alert('Venda cancelada e produtos devolvidos ao estoque.');
+      },
+      error: error => {
+        this.cancelingSaleIds.delete(saleId);
+        console.error('Erro ao cancelar venda:', error);
+        alert('Não foi possível cancelar a venda. Ela pode já ter sido cancelada.');
       }
     });
   }
@@ -249,15 +320,21 @@ export class SalesComponent implements OnInit {
     return this.sales.filter(sale => sale.status === 'CANCELLED').length;
   }
 
-  generateReceipt(sale: any): string {
-    const itemsText = sale.items?.map((item: any) =>
-      `- ${item.name || item.productName}: ${item.quantity} x R$ ${Number(item.price || item.unitPrice || 0).toFixed(2)}`
-    ).join('\n') || 'Nenhum item';
+  generateReceipt(sale: Sale): string {
+    const currency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const itemsText = sale.items?.map(item => [
+      `${item.productName} (${item.category || 'Sem categoria'})`,
+      item.description ? `  Descrição: ${item.description}` : '',
+      `  ${item.quantity} x ${currency(item.unitPrice)} = ${currency(item.quantity * item.unitPrice)}`
+    ].filter(Boolean).join('\n')).join('\n\n') || 'Nenhum item';
+    const address = [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', ');
 
     return [
       this.company?.name || 'Empresa',
-      [this.company?.document, this.company?.phone].filter(Boolean).join(' | '),
-      [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', '),
+      `CNPJ: ${this.company?.document || 'Não informado'}`,
+      `Endereço: ${address || 'Não informado'}`,
+      `Telefone: ${this.company?.phone || 'Não informado'}`,
+      `E-mail: ${this.company?.email || 'Não informado'}`,
       '',
       'RECIBO DE VENDA',
       '================',
@@ -267,16 +344,23 @@ export class SalesComponent implements OnInit {
       '',
       itemsText,
       '',
-      `Total: R$ ${Number(sale.totalAmount || 0).toFixed(2)}`,
+      `Total vendido: ${currency(sale.totalAmount || 0)}`,
       '================',
       this.company?.printFooter || 'Obrigado pela preferência!'
     ].join('\n');
   }
 
-  printReceipt(sale: any): void {
+  printReceipt(sale: Sale): void {
     const receipt = this.generateReceipt(sale);
     const printWindow = window.open('', '_blank', 'width=500,height=700');
     if (printWindow) {
+      const escapeHtml = (value: string) => value.replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[character] ?? character);
       printWindow.document.write(`
         <html>
           <head>
@@ -289,9 +373,8 @@ export class SalesComponent implements OnInit {
             </style>
           </head>
           <body>
-            ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" class="logo">` : ''}
-            <h2 class="company-name">${this.company?.name || 'Empresa'}</h2>
-            <pre>${receipt}</pre>
+            ${this.company?.logoData ? `<img src="${escapeHtml(this.company.logoData)}" alt="Logo" class="logo">` : ''}
+            <pre>${escapeHtml(receipt)}</pre>
           </body>
         </html>
       `);

@@ -2,6 +2,7 @@ package com.br.api.repository.sales;
 
 import com.br.api.model.sales.Sale;
 import com.br.api.repository.reports.SalesReportDTO;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +15,18 @@ import java.util.Optional;
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Long> {
 
+    @Override
+    @EntityGraph(attributePaths = {"customer", "items", "items.inventoryItem"})
+    List<Sale> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = {"customer", "items", "items.inventoryItem"})
+    Optional<Sale> findById(Long id);
+
+    @EntityGraph(attributePaths = {"customer", "items", "items.inventoryItem"})
     List<Sale> findBySaleDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    @EntityGraph(attributePaths = {"customer", "items", "items.inventoryItem"})
     List<Sale> findByCustomerId(Long customerId);
     List<Sale> findByStatus(String status);
     

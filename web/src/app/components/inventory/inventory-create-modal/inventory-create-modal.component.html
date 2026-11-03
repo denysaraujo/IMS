@@ -1,0 +1,110 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+  <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white/95 shadow-2xl dark:bg-gray-900/95">
+    <div class="border-b border-gray-200/50 px-6 py-5 dark:border-gray-700/50">
+      <h2 class="flex items-center text-xl font-bold text-gray-800 dark:text-white">
+        <i class="fas fa-warehouse mr-2 text-green-500"></i>
+        {{ initialInventory ? 'Editar inventário' : 'Novo inventário' }}
+      </h2>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="space-y-5 p-6">
+      <div>
+        <label for="inventory-name" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Nome
+        </label>
+        <input
+          id="inventory-name"
+          [(ngModel)]="inventory.name"
+          name="name"
+          type="text"
+          required
+          maxlength="255"
+          class="block w-full rounded-xl border border-gray-300 bg-white/50 px-3 py-2.5 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800/50 dark:text-white"
+          placeholder="Ex.: Estoque da loja"
+        />
+      </div>
+
+      <div>
+        <label for="inventory-location" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Localização
+        </label>
+        <input
+          id="inventory-location"
+          [(ngModel)]="inventory.location"
+          name="location"
+          type="text"
+          required
+          maxlength="255"
+          class="block w-full rounded-xl border border-gray-300 bg-white/50 px-3 py-2.5 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800/50 dark:text-white"
+          placeholder="Ex.: Loja principal"
+        />
+      </div>
+
+      <div>
+        <label for="inventory-category" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Categoria
+        </label>
+        <input
+          id="inventory-category"
+          [(ngModel)]="inventory.category"
+          name="category"
+          type="text"
+          required
+          maxlength="255"
+          class="block w-full rounded-xl border border-gray-300 bg-white/50 px-3 py-2.5 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800/50 dark:text-white"
+          placeholder="Ex.: Geral"
+        />
+      </div>
+
+      <div>
+        <label for="inventory-description" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Descrição (opcional)
+        </label>
+        <textarea
+          id="inventory-description"
+          [(ngModel)]="inventory.description"
+          name="description"
+          rows="3"
+          maxlength="1000"
+          class="block w-full rounded-xl border border-gray-300 bg-white/50 px-3 py-2.5 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800/50 dark:text-white"
+          placeholder="Detalhes sobre este inventário"
+        ></textarea>
+      </div>
+
+      <div>
+        <label for="inventory-status" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Status
+        </label>
+        <select
+          id="inventory-status"
+          [(ngModel)]="inventory.status"
+          name="status"
+          class="block w-full rounded-xl border border-gray-300 bg-white/50 px-3 py-2.5 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800/50 dark:text-white"
+        >
+          <option value="ACTIVE">Ativo</option>
+          <option value="INACTIVE">Inativo</option>
+          <option value="MAINTENANCE">Em manutenção</option>
+        </select>
+      </div>
+
+      <div class="flex justify-end gap-3 border-t border-gray-200/50 pt-4 dark:border-gray-700/50">
+        <button
+          type="button"
+          (click)="onCancel()"
+          [disabled]="isSaving"
+          class="rounded-xl bg-gray-200/70 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-300/70 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-700/70 dark:text-gray-300"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSaving"
+          class="rounded-xl bg-gradient-to-r from-green-500 to-teal-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <i class="fas fa-save mr-2"></i>
+          {{ isSaving ? 'Salvando...' : initialInventory ? 'Salvar alterações' : 'Criar inventário' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

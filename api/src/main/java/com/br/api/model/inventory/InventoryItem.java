@@ -60,6 +60,9 @@ public class InventoryItem {
     @JsonIgnore
     private Inventory inventory;
 
+    @Transient
+    private Long requestedInventoryId;
+
     // Construtores
     public InventoryItem() {
         this.createdAt = LocalDateTime.now();
@@ -130,6 +133,16 @@ public class InventoryItem {
 
     public Inventory getInventory() { return inventory; }
     public void setInventory(Inventory inventory) { this.inventory = inventory; }
+
+    public Long getInventoryId() {
+        return requestedInventoryId != null
+            ? requestedInventoryId
+            : inventory == null ? null : inventory.getId();
+    }
+
+    public void setInventoryId(Long inventoryId) {
+        this.requestedInventoryId = inventoryId;
+    }
 
     // Métodos de negócio
     @PreUpdate

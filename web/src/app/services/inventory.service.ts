@@ -14,6 +14,11 @@ export interface Inventory {
   status?: string;
 }
 
+export type CreateInventoryRequest = Pick<Inventory, 'name' | 'location' | 'category'> &
+  Partial<Pick<Inventory, 'description' | 'status'>>;
+
+export type UpdateInventoryRequest = CreateInventoryRequest;
+
 export interface InventoryItem {
   id?: number;
   productCode: string | null;
@@ -28,6 +33,7 @@ export interface InventoryItem {
   location?: string;
   status?: string;
   expirationDate?: string;
+  inventoryId?: number;
   inventory?: Inventory;
 }
 
@@ -41,8 +47,16 @@ export class InventoryService {
     return this.http.get<Inventory[]>(this.apiUrl);
   }
 
-  createInventory(inventory: Pick<Inventory, 'name' | 'location' | 'category'> & Partial<Pick<Inventory, 'description'>>): Observable<Inventory> {
+  createInventory(inventory: CreateInventoryRequest): Observable<Inventory> {
     return this.http.post<Inventory>(this.apiUrl, inventory);
+  }
+
+  updateInventory(id: number, inventory: UpdateInventoryRequest): Observable<Inventory> {
+    return this.http.put<Inventory>(`${this.apiUrl}/${id}`, inventory);
+  }
+
+  deleteInventory(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   getItems(): Observable<InventoryItem[]> {
@@ -59,6 +73,10 @@ export class InventoryService {
 
   updateItem(id: number, item: InventoryItem): Observable<InventoryItem> {
     return this.http.put<InventoryItem>(`${this.apiUrl}/items/${id}`, item);
+  }
+
+  deleteItem(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/items/${id}`);
   }
 
   updateStock(id: number, quantityChange: number): Observable<InventoryItem> {

@@ -42,7 +42,7 @@ public class Inventory {
 
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<InventoryItem> items = new ArrayList<>();
 

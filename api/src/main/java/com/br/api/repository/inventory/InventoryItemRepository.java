@@ -22,7 +22,7 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
     
     List<InventoryItem> findBySupplier(String supplier);
     
-    List<InventoryItem> findByInventoryId(Long inventoryId);
+    List<InventoryItem> findByInventory_Id(Long inventoryId);
 
     List<InventoryItem> findByLowStockAlertTrue();
     

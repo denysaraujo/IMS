@@ -16,11 +16,17 @@ public class SaleItem {
     @JsonIgnore // 🔥 CORREÇÃO: Evita recursão com Sale
     private Sale sale;
 
-    @Column(nullable = false)
+    @Column
     private String productCode;
 
     @Column(nullable = false)
     private String productName;
+
+    @Column
+    private String category;
+
+    @Column(length = 2000)
+    private String description;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -28,8 +34,9 @@ public class SaleItem {
     @Column(nullable = false)
     private Double unitPrice;
 
-    // Referência ao item do estoque (não persistido)
-    @Transient
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_item_id")
+    @JsonIgnore
     private InventoryItem inventoryItem;
 
     // Construtores
@@ -55,11 +62,30 @@ public class SaleItem {
     public String getProductName() { return productName; }
     public void setProductName(String productName) { this.productName = productName; }
 
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
 
     public Double getUnitPrice() { return unitPrice; }
     public void setUnitPrice(Double unitPrice) { this.unitPrice = unitPrice; }
+
+    public Long getInventoryItemId() {
+        return inventoryItem == null ? null : inventoryItem.getId();
+    }
+
+    public void setInventoryItemId(Long inventoryItemId) {
+        if (inventoryItemId == null) {
+            inventoryItem = null;
+        } else {
+            inventoryItem = new InventoryItem();
+            inventoryItem.setId(inventoryItemId);
+        }
+    }
 
     public InventoryItem getInventoryItem() { return inventoryItem; }
     public void setInventoryItem(InventoryItem inventoryItem) { this.inventoryItem = inventoryItem; }

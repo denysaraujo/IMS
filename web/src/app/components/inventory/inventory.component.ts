@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of, switchMap, tap, throwError } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { Inventory, InventoryItem, InventoryService } from '../../services/inventory.service';
+import { CreateInventoryRequest, Inventory, InventoryItem, InventoryService } from '../../services/inventory.service';
+import { InventoryCreateModalComponent } from './inventory-create-modal/inventory-create-modal.component';
 
 type InventoryItemView = InventoryItem & {
   code: string | null;
@@ -17,7 +18,7 @@ type InventoryItemView = InventoryItem & {
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, InventoryCreateModalComponent],
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.css']
 })
@@ -26,19 +27,30 @@ export class InventoryComponent implements OnInit {
   inventoryItems: InventoryItemView[] = [];
   categories: string[] = [];
   inventories: Inventory[] = [];
+  selectedInventoryId: number | null = null;
+  isCreateInventoryModalOpen = false;
+  inventoryBeingEdited: Inventory | null = null;
+  isSavingInventory = false;
   isLoadingInventories = false;
   isSavingProduct = false;
+  editingProductId: number | null = null;
   editingBarcodeItemId: number | null = null;
   editedBarcode = '';
   newProduct = {
     barcode: '',
     name: '',
     category: 'Eletrônicos',
+    description: '',
     quantity: 1,
     unitPrice: 0,
     minStock: 5,
-    maxStock: 20
+    maxStock: 20,
+    supplier: '',
+    location: '',
+    expirationDate: '2099-12-31'
   };
+  searchTerm = '';
+  selectedCategoryFilter = '';
 
   readonly barcodeCatalog: Record<string, { name: string; category: string; unitPrice: number; minStock: number; maxStock: number }> = {
     '7891234560011': { name: 'Notebook Dell Inspiron', category: 'Eletrônicos', unitPrice: 3499.99, minStock: 5, maxStock: 50 },
@@ -78,26 +90,113 @@ export class InventoryComponent implements OnInit {
     this.inventoryService.getInventories().subscribe({
       next: inventories => {
         this.inventories = inventories;
+        this.selectedInventoryId = inventories.find(inventory => inventory.id != null)?.id ?? null;
         this.isLoadingInventories = false;
+        this.refreshInventoryTotals();
       },
       error: error => {
         this.isLoadingInventories = false;
         console.error('Erro ao carregar inventários:', error);
+        alert('Não foi possível carregar os inventários.');
       }
     });
 
     this.inventoryService.getItems().subscribe({
       next: items => {
         this.inventoryItems = items.map(item => this.toViewItem(item));
-        this.categories = [...new Set(this.inventoryItems.map(item => item.category))];
+        this.refreshCategories();
+        this.refreshInventoryTotals();
       },
-      error: error => console.error('Erro ao carregar itens do estoque:', error)
+      error: error => {
+        console.error('Erro ao carregar itens do estoque:', error);
+        alert('Não foi possível carregar os produtos do estoque.');
+      }
+    });
+  }
+
+  openCreateInventoryModal(): void {
+    this.inventoryBeingEdited = null;
+    this.isCreateInventoryModalOpen = true;
+  }
+
+  editInventory(inventory: Inventory): void {
+    this.inventoryBeingEdited = inventory;
+    this.isCreateInventoryModalOpen = true;
+  }
+
+  closeCreateInventoryModal(): void {
+    if (!this.isSavingInventory) {
+      this.isCreateInventoryModalOpen = false;
+      this.inventoryBeingEdited = null;
+    }
+  }
+
+  createInventory(inventory: CreateInventoryRequest): void {
+    if (this.isSavingInventory) {
+      return;
+    }
+
+    this.isSavingInventory = true;
+    const inventoryBeingEdited = this.inventoryBeingEdited;
+    const save$ = inventoryBeingEdited?.id != null
+      ? this.inventoryService.updateInventory(inventoryBeingEdited.id, inventory)
+      : this.inventoryService.createInventory(inventory);
+
+    save$.subscribe({
+      next: savedInventory => {
+        this.inventories = inventoryBeingEdited
+          ? this.inventories.map(entry => entry.id === savedInventory.id ? savedInventory : entry)
+          : [savedInventory, ...this.inventories];
+        if (!inventoryBeingEdited || this.selectedInventoryId == null) {
+          this.selectedInventoryId = savedInventory.id ?? null;
+        }
+        this.isSavingInventory = false;
+        this.isCreateInventoryModalOpen = false;
+        this.inventoryBeingEdited = null;
+        alert(inventoryBeingEdited ? 'Inventário atualizado com sucesso.' : 'Inventário criado com sucesso.');
+      },
+      error: error => {
+        this.isSavingInventory = false;
+        console.error('Erro ao salvar inventário:', error);
+        alert('Não foi possível salvar o inventário. Verifique os dados e tente novamente.');
+      }
+    });
+  }
+
+  deleteInventory(inventory: Inventory): void {
+    if (inventory.id == null || !window.confirm(`Excluir o inventário "${inventory.name}" e todos os produtos vinculados?`)) {
+      return;
+    }
+
+    this.inventoryService.deleteInventory(inventory.id).subscribe({
+      next: () => {
+        this.inventories = this.inventories.filter(entry => entry.id !== inventory.id);
+        const deletedProducts = this.inventoryItems.filter(item => item.inventoryId === inventory.id);
+        this.inventoryItems = this.inventoryItems.filter(item => item.inventoryId !== inventory.id);
+        if (deletedProducts.some(item => item.id === this.editingProductId)) {
+          this.cancelProductEdit();
+        }
+        if (deletedProducts.some(item => item.id === this.editingBarcodeItemId)) {
+          this.cancelBarcodeEdit();
+        }
+        if (this.selectedInventoryId === inventory.id) {
+          this.selectedInventoryId = this.inventories.find(entry => entry.id != null)?.id ?? null;
+        }
+        this.refreshCategories();
+        this.refreshInventoryTotals();
+        alert('Inventário e produtos vinculados excluídos com sucesso.');
+      },
+      error: error => {
+        console.error('Erro ao excluir inventário:', error);
+        alert('Não foi possível excluir o inventário.');
+      }
     });
   }
 
   private toViewItem(item: InventoryItem): InventoryItemView {
     return {
       ...item,
+      inventoryId: item.inventoryId ?? item.inventory?.id,
       code: item.productCode,
       name: item.productName,
       minStock: item.minStockLevel,
@@ -158,30 +257,33 @@ export class InventoryComponent implements OnInit {
       return;
     }
 
-    if (!this.newProduct.name.trim() || this.newProduct.quantity <= 0) {
-      alert('Informe o nome do produto e uma quantidade maior que zero para cadastrar.');
+    if (!this.newProduct.name.trim() || !this.newProduct.category.trim()
+      || !Number.isInteger(this.newProduct.quantity) || this.newProduct.quantity < 0
+      || !Number.isFinite(this.newProduct.unitPrice) || this.newProduct.unitPrice < 0
+      || !Number.isInteger(this.newProduct.minStock) || this.newProduct.minStock < 0
+      || !Number.isInteger(this.newProduct.maxStock) || this.newProduct.maxStock < this.newProduct.minStock
+      || !this.newProduct.expirationDate) {
+      alert('Preencha os campos obrigatórios e confira quantidade, preço e limites de estoque.');
       return;
     }
 
-    const item: InventoryItem = {
-      productCode: this.newProduct.barcode.trim() || null,
-      productName: this.newProduct.name,
-      category: this.newProduct.category,
-      quantity: this.newProduct.quantity,
-      minStockLevel: this.newProduct.minStock,
-      maxStockLevel: this.newProduct.maxStock,
-      unitPrice: this.newProduct.unitPrice,
-      expirationDate: '2099-12-31'
-    };
+    if (this.editingProductId != null) {
+      this.updateInventoryProduct();
+      return;
+    }
 
-    const inventory$ = this.inventories[0]
-      ? of(this.inventories[0])
+    const selectedInventory = this.inventories.find(inventory => inventory.id === this.selectedInventoryId);
+    const inventory$ = selectedInventory
+      ? of(selectedInventory)
       : this.inventoryService.createInventory({
           name: 'Estoque principal',
           location: 'Loja',
           category: 'Geral'
         }).pipe(
-          tap(inventory => this.inventories = [inventory, ...this.inventories])
+          tap(inventory => {
+            this.inventories = [inventory, ...this.inventories];
+            this.selectedInventoryId = inventory.id ?? null;
+          })
         );
 
     this.isSavingProduct = true;
@@ -190,13 +292,14 @@ export class InventoryComponent implements OnInit {
         if (inventory.id == null) {
           return throwError(() => new Error('A API criou um inventário sem retornar seu identificador.'));
         }
-        return this.inventoryService.createItem(inventory.id, item);
+        return this.inventoryService.createItem(inventory.id, this.buildProductPayload(inventory.id));
       })
     ).subscribe({
       next: created => {
         this.isSavingProduct = false;
         this.inventoryItems.unshift(this.toViewItem(created));
-        this.categories = [...new Set(this.inventoryItems.map(entry => entry.category))];
+        this.refreshCategories();
+        this.refreshInventoryTotals();
         this.resetNewProduct();
         alert('Produto cadastrado com sucesso no estoque.');
       },
@@ -206,6 +309,104 @@ export class InventoryComponent implements OnInit {
         alert('Não foi possível cadastrar o produto no estoque.');
       }
     });
+  }
+
+  editInventoryProduct(item: InventoryItemView): void {
+    if (item.id == null) {
+      return;
+    }
+    this.editingProductId = item.id;
+    this.selectedInventoryId = item.inventoryId ?? this.selectedInventoryId;
+    this.newProduct = {
+      barcode: item.productCode ?? '',
+      name: item.productName,
+      category: item.category,
+      description: item.description ?? '',
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      minStock: item.minStockLevel,
+      maxStock: item.maxStockLevel,
+      supplier: item.supplier ?? '',
+      location: item.location ?? '',
+      expirationDate: item.expirationDate ?? '2099-12-31'
+    };
+  }
+
+  cancelProductEdit(): void {
+    this.editingProductId = null;
+    this.resetNewProduct();
+  }
+
+  private updateInventoryProduct(): void {
+    if (this.editingProductId == null || this.selectedInventoryId == null) {
+      alert('Selecione um inventário para o produto.');
+      return;
+    }
+
+    this.isSavingProduct = true;
+    this.inventoryService.updateItem(
+      this.editingProductId,
+      this.buildProductPayload(this.selectedInventoryId)
+    ).subscribe({
+      next: savedItem => {
+        const index = this.inventoryItems.findIndex(item => item.id === savedItem.id);
+        if (index >= 0) {
+          this.inventoryItems[index] = this.toViewItem(savedItem);
+        }
+        this.isSavingProduct = false;
+        this.cancelProductEdit();
+        this.refreshCategories();
+        this.refreshInventoryTotals();
+        alert('Produto atualizado com sucesso.');
+      },
+      error: error => {
+        this.isSavingProduct = false;
+        console.error('Erro ao atualizar produto:', error);
+        alert('Não foi possível atualizar o produto. Verifique os dados e tente novamente.');
+      }
+    });
+  }
+
+  deleteInventoryProduct(item: InventoryItemView): void {
+    if (item.id == null || !window.confirm(`Excluir o produto "${item.productName}"?`)) {
+      return;
+    }
+
+    this.inventoryService.deleteItem(item.id).subscribe({
+      next: () => {
+        this.inventoryItems = this.inventoryItems.filter(entry => entry.id !== item.id);
+        if (this.editingProductId === item.id) {
+          this.cancelProductEdit();
+        }
+        if (this.editingBarcodeItemId === item.id) {
+          this.cancelBarcodeEdit();
+        }
+        this.refreshCategories();
+        this.refreshInventoryTotals();
+        alert('Produto excluído com sucesso.');
+      },
+      error: error => {
+        console.error('Erro ao excluir produto:', error);
+        alert('Não foi possível excluir o produto.');
+      }
+    });
+  }
+
+  private buildProductPayload(inventoryId: number): InventoryItem {
+    return {
+      productCode: this.newProduct.barcode.trim() || null,
+      productName: this.newProduct.name.trim(),
+      description: this.newProduct.description.trim() || undefined,
+      category: this.newProduct.category.trim(),
+      quantity: this.newProduct.quantity,
+      minStockLevel: this.newProduct.minStock,
+      maxStockLevel: this.newProduct.maxStock,
+      unitPrice: this.newProduct.unitPrice,
+      supplier: this.newProduct.supplier.trim() || undefined,
+      location: this.newProduct.location.trim() || undefined,
+      expirationDate: this.newProduct.expirationDate,
+      inventoryId
+    };
   }
 
   editBarcode(item: InventoryItemView): void {
@@ -241,6 +442,7 @@ export class InventoryComponent implements OnInit {
       location: item.location,
       status: item.status,
       expirationDate: item.expirationDate,
+      inventoryId: item.inventoryId,
       inventory: item.inventory
     };
 
@@ -250,6 +452,7 @@ export class InventoryComponent implements OnInit {
         if (index !== -1) {
           this.inventoryItems[index] = this.toViewItem(savedItem);
         }
+        this.refreshInventoryTotals();
         this.cancelBarcodeEdit();
         alert('Código de barras atualizado com sucesso.');
       },
@@ -261,15 +464,50 @@ export class InventoryComponent implements OnInit {
   }
 
   private resetNewProduct(): void {
+    this.editingProductId = null;
     this.newProduct = {
       barcode: '',
       name: '',
       category: 'Eletrônicos',
+      description: '',
       quantity: 1,
       unitPrice: 0,
       minStock: 5,
-      maxStock: 20
+      maxStock: 20,
+      supplier: '',
+      location: '',
+      expirationDate: '2099-12-31'
     };
+  }
+
+  private refreshCategories(): void {
+    this.categories = [...new Set(this.inventoryItems.map(item => item.category))];
+  }
+
+  private refreshInventoryTotals(): void {
+    this.inventories = this.inventories.map(inventory => {
+      const items = this.inventoryItems.filter(item => item.inventoryId === inventory.id);
+      return {
+        ...inventory,
+        totalItems: items.length,
+        totalValue: items.reduce((total, item) => total + item.quantity * item.unitPrice, 0)
+      };
+    });
+  }
+
+  getInventoryName(inventoryId: number | undefined): string {
+    return this.inventories.find(inventory => inventory.id === inventoryId)?.name ?? 'Inventário não identificado';
+  }
+
+  get filteredInventoryItems(): InventoryItemView[] {
+    const search = this.searchTerm.trim().toLocaleLowerCase();
+    return this.inventoryItems.filter(item => {
+      const matchesSearch = !search
+        || item.productName.toLocaleLowerCase().includes(search)
+        || (item.productCode ?? '').toLocaleLowerCase().includes(search);
+      const matchesCategory = !this.selectedCategoryFilter || item.category === this.selectedCategoryFilter;
+      return matchesSearch && matchesCategory;
+    });
   }
 
   getTotalItems(): number {

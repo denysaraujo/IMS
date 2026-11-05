@@ -30,7 +30,7 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Locações',
       path: '/rentals',
-      icon: 'fas fa-hand-holding-box',
+      icon: 'fas fa-handshake',
       badge: null
     },
     {

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CustomerService, Customer, CustomerStats, Address } from '../../services/customer.service';
+import { CepService } from '../../services/cep.service';
 
 @Component({
   selector: 'app-customers',
@@ -23,6 +24,10 @@ export class CustomersComponent implements OnInit {
   isCreating: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
+  isLookingUpZipCode = false;
+  zipCodeLookupError = '';
+  private lastRequestedZipCode = '';
+  private zipCodeLookupRequestId = 0;
 
   // Novo cliente para formulário
   newCustomer: Customer = {
@@ -64,6 +69,7 @@ export class CustomersComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private customerService: CustomerService,
+    private cepService: CepService,
     private router: Router
   ) {}
 
@@ -146,6 +152,7 @@ export class CustomersComponent implements OnInit {
   }
 
   startCreate() {
+    this.resetZipCodeLookup();
     this.newCustomer = {
       name: '',
       document: '',
@@ -171,6 +178,7 @@ export class CustomersComponent implements OnInit {
 
   startEdit() {
     if (this.selectedCustomer) {
+      this.resetZipCodeLookup();
       // Busca os dados completos do cliente antes de editar
       this.isLoading = true;
       this.customerService.getCustomer(this.selectedCustomer.id!).subscribe({
@@ -377,6 +385,63 @@ export class CustomersComponent implements OnInit {
     }
   }
 
+  onZipCodeInput(zipCodeInput: string): void {
+    if (this.newCustomer.address) {
+      this.newCustomer.address.zipCode = zipCodeInput;
+    }
+    this.formatZipCode();
+    const zipCode = this.newCustomer.address?.zipCode?.replace(/\D/g, '') || '';
+    this.zipCodeLookupError = '';
+
+    if (zipCode.length !== 8) {
+      this.lastRequestedZipCode = '';
+      this.zipCodeLookupRequestId++;
+      this.isLookingUpZipCode = false;
+      return;
+    }
+
+    if (zipCode === this.lastRequestedZipCode) {
+      return;
+    }
+
+    this.lastRequestedZipCode = zipCode;
+    const requestId = ++this.zipCodeLookupRequestId;
+    this.isLookingUpZipCode = true;
+    this.cepService.lookup(zipCode).subscribe({
+      next: address => {
+        if (requestId !== this.zipCodeLookupRequestId) {
+          return;
+        }
+
+        this.newCustomer.address = {
+          ...this.newCustomer.address,
+          street: address.street,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          state: address.state
+        };
+        this.isLookingUpZipCode = false;
+      },
+      error: error => {
+        if (requestId !== this.zipCodeLookupRequestId) {
+          return;
+        }
+
+        console.error('Erro ao consultar endereço pelo CEP:', error);
+        this.lastRequestedZipCode = '';
+        this.zipCodeLookupError = 'Não foi possível consultar o CEP. Verifique o número e tente novamente.';
+        this.isLookingUpZipCode = false;
+      }
+    });
+  }
+
+  private resetZipCodeLookup(): void {
+    this.zipCodeLookupRequestId++;
+    this.lastRequestedZipCode = '';
+    this.isLookingUpZipCode = false;
+    this.zipCodeLookupError = '';
+  }
+
   saveCustomer() {
     if (!this.validateCustomer()) {
       return;
@@ -434,6 +499,7 @@ export class CustomersComponent implements OnInit {
   }
 
   cancelEdit() {
+    this.resetZipCodeLookup();
     this.isCreating = false;
     this.isEditing = false;
     this.selectedCustomer = null;

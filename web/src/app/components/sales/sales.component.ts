@@ -320,39 +320,64 @@ export class SalesComponent implements OnInit {
     return this.sales.filter(sale => sale.status === 'CANCELLED').length;
   }
 
+  private formatCurrency(value: number): string {
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  private formatThermalLine(left: string, right?: string, width = 42): string {
+    const leftText = left.trim();
+    const rightText = right?.trim() ?? '';
+
+    if (!rightText) {
+      return leftText.padEnd(width, ' ').slice(0, width);
+    }
+
+    return `${leftText.padEnd(Math.max(10, width - rightText.length), ' ')}${rightText}`.slice(0, width);
+  }
+
   generateReceipt(sale: Sale): string {
-    const currency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    const itemsText = sale.items?.map(item => [
-      `${item.productName} (${item.category || 'Sem categoria'})`,
-      item.description ? `  Descrição: ${item.description}` : '',
-      `  ${item.quantity} x ${currency(item.unitPrice)} = ${currency(item.quantity * item.unitPrice)}`
-    ].filter(Boolean).join('\n')).join('\n\n') || 'Nenhum item';
+    const itemsText = sale.items?.map(item => {
+      const productName = `${item.productName || 'Produto'}${item.category ? ` (${item.category})` : ''}`;
+      const itemTotal = this.formatCurrency((item.quantity ?? 0) * (item.unitPrice ?? 0));
+      const lines = [
+        productName,
+        item.description ? `  ${item.description}` : '',
+        this.formatThermalLine(`${(item.quantity ?? 0)}x ${this.formatCurrency(item.unitPrice ?? 0)}`, itemTotal)
+      ].filter(Boolean);
+
+      return lines.join('\n');
+    }).join('\n') || 'Nenhum item';
+
     const address = [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', ');
+    const footer = this.company?.printFooter || 'Obrigado pela preferência!';
+    const saleTotal = this.formatCurrency(sale.totalAmount || 0);
 
     return [
-      this.company?.name || 'Empresa',
+      (this.company?.name || 'Empresa').toUpperCase(),
+      '================================',
+      'RECIBO DE VENDA',
+      '================================',
       `CNPJ: ${this.company?.document || 'Não informado'}`,
       `Endereço: ${address || 'Não informado'}`,
       `Telefone: ${this.company?.phone || 'Não informado'}`,
       `E-mail: ${this.company?.email || 'Não informado'}`,
       '',
-      'RECIBO DE VENDA',
-      '================',
       `Código: ${sale.saleCode}`,
       `Cliente: ${sale.customer?.name || 'Consumidor'}`,
       `Data: ${new Date(sale.saleDate).toLocaleString('pt-BR')}`,
-      '',
+      '--------------------------------',
       itemsText,
-      '',
-      `Total vendido: ${currency(sale.totalAmount || 0)}`,
-      '================',
-      this.company?.printFooter || 'Obrigado pela preferência!'
+      '--------------------------------',
+      this.formatThermalLine('TOTAL', saleTotal),
+      `Total vendido: ${saleTotal}`,
+      '================================',
+      footer.toUpperCase()
     ].join('\n');
   }
 
   printReceipt(sale: Sale): void {
     const receipt = this.generateReceipt(sale);
-    const printWindow = window.open('', '_blank', 'width=500,height=700');
+    const printWindow = window.open('', '_blank', 'width=400,height=700');
     if (printWindow) {
       const escapeHtml = (value: string) => value.replace(/[&<>"']/g, character => ({
         '&': '&amp;',
@@ -361,19 +386,40 @@ export class SalesComponent implements OnInit {
         '"': '&quot;',
         "'": '&#39;'
       })[character] ?? character);
+
       printWindow.document.write(`
         <html>
           <head>
             <title>Recibo de venda</title>
             <style>
-              body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
-              pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
-              .logo { display: block; max-width: 180px; max-height: 80px; margin: 0 auto 16px; }
-              .company-name { text-align: center; margin: 0 0 12px; font-size: 20px; }
+              @page { size: 80mm auto; margin: 0; }
+              html, body {
+                margin: 0;
+                padding: 8px;
+                background: #fff;
+                color: #111827;
+                width: 80mm;
+                box-sizing: border-box;
+              }
+              body {
+                font-family: "Courier New", Courier, monospace;
+                font-size: 11px;
+                line-height: 1.35;
+                letter-spacing: 0.2px;
+              }
+              pre {
+                margin: 0;
+                white-space: pre-wrap;
+                word-break: break-word;
+                font-family: inherit;
+                font-size: inherit;
+                line-height: inherit;
+              }
+              .center { text-align: center; }
             </style>
           </head>
           <body>
-            ${this.company?.logoData ? `<img src="${escapeHtml(this.company.logoData)}" alt="Logo" class="logo">` : ''}
+            ${this.company?.logoData ? `<img src="${escapeHtml(this.company.logoData)}" alt="Logo" style="display:block;max-width:120px;max-height:60px;margin:0 auto 8px;">` : ''}
             <pre>${escapeHtml(receipt)}</pre>
           </body>
         </html>

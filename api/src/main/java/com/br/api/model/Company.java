@@ -32,6 +32,9 @@ public class Company {
     private String email;
     private String phone;
     private String address;
+    private String addressNumber;
+    private String neighborhood;
+    private String zipCode;
     private String city;
     private String state;
 
@@ -92,6 +95,30 @@ public class Company {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getAddressNumber() {
+        return addressNumber;
+    }
+
+    public void setAddressNumber(String addressNumber) {
+        this.addressNumber = addressNumber;
+    }
+
+    public String getNeighborhood() {
+        return neighborhood;
+    }
+
+    public void setNeighborhood(String neighborhood) {
+        this.neighborhood = neighborhood;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
     }
 
     public String getCity() {

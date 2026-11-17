@@ -83,4 +83,8 @@ export class SaleService {
   cancelSale(saleId: number): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${saleId}/cancel`, {});
   }
+
+  deleteSale(saleId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${saleId}`);
+  }
 }

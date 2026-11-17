@@ -98,6 +98,7 @@ class InventoryItemServiceTest {
         update.setProductName("Cadeira executiva");
         update.setCategory("Móveis");
         update.setQuantity(3);
+        update.setAvailableForRental(true);
         update.setMinStockLevel(1);
         update.setMaxStockLevel(10);
         update.setUnitPrice(120.0);
@@ -118,6 +119,7 @@ class InventoryItemServiceTest {
         assertEquals(1, targetInventory.getTotalItems());
         assertEquals(360.0, targetInventory.getTotalValue());
         assertEquals(LocalDate.of(2030, 6, 15), saved.getExpirationDate());
+        assertTrue(saved.isAvailableForRental());
         verify(inventoryRepository).save(originalInventory);
         verify(inventoryRepository).save(targetInventory);
     }

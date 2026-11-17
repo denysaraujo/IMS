@@ -7,6 +7,9 @@ public class CompanyDTO {
     private String email;
     private String phone;
     private String address;
+    private String addressNumber;
+    private String neighborhood;
+    private String zipCode;
     private String city;
     private String state;
     private String logoData;
@@ -22,6 +25,9 @@ public class CompanyDTO {
         this.email = company.getEmail();
         this.phone = company.getPhone();
         this.address = company.getAddress();
+        this.addressNumber = company.getAddressNumber();
+        this.neighborhood = company.getNeighborhood();
+        this.zipCode = company.getZipCode();
         this.city = company.getCity();
         this.state = company.getState();
         this.logoData = company.getLogoData();
@@ -39,6 +45,12 @@ public class CompanyDTO {
     public void setPhone(String phone) { this.phone = phone; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    public String getAddressNumber() { return addressNumber; }
+    public void setAddressNumber(String addressNumber) { this.addressNumber = addressNumber; }
+    public String getNeighborhood() { return neighborhood; }
+    public void setNeighborhood(String neighborhood) { this.neighborhood = neighborhood; }
+    public String getZipCode() { return zipCode; }
+    public void setZipCode(String zipCode) { this.zipCode = zipCode; }
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
     public String getState() { return state; }

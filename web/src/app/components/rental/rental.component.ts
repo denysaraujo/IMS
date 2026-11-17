@@ -20,26 +20,27 @@ export class RentalComponent implements OnInit {
   company: Company | null = null;
   rentals: any[] = [];
   customers: Customer[] = [];
+  inventoryItems: InventoryItem[] = [];
   selectedCustomer: any = null;
   isCreatingRental = false;
+  isLoadingRentals = false;
+  rentalLoadError = '';
+  isSavingRental = false;
+  returningRentalIds = new Set<number>();
+  deletingRentalIds = new Set<number>();
+  barcodeLookup = '';
+  receiptPreviewTitle = '';
+  receiptPreview = '';
 
   rentalForm = {
     rentalCode: '',
     customerName: '',
-    productCode: '',
-    productName: '',
+    inventoryItemId: null as number | null,
     quantity: 1,
     dailyRate: 0,
     rentalDays: 1,
     startDate: new Date().toISOString().slice(0, 10),
     notes: ''
-  };
-
-  readonly barcodeCatalog: Record<string, { productName: string; dailyRate: number }> = {
-    '7891234561011': { productName: 'Câmera Canon', dailyRate: 120 },
-    '7891234561028': { productName: 'Projetor Epson', dailyRate: 200 },
-    '7891234561035': { productName: 'Luz de Estúdio', dailyRate: 90 },
-    '7891234561042': { productName: 'Tripé profissional', dailyRate: 60 }
   };
 
   constructor(
@@ -55,6 +56,7 @@ export class RentalComponent implements OnInit {
     this.loadUserData();
     this.loadRentals();
     this.loadCustomers();
+    this.loadInventoryItems();
     this.companyService.load().subscribe({ next: company => this.company = company });
     this.generateCode();
   }
@@ -71,12 +73,21 @@ export class RentalComponent implements OnInit {
   }
 
   loadRentals(): void {
+    this.isLoadingRentals = true;
+    this.rentalLoadError = '';
     this.rentalService.getRentals().subscribe({
-      next: rentals => this.rentals = rentals.map(rental => ({
-        ...rental,
-        customerName: rental.customer?.name || 'Cliente'
-      })),
-      error: error => console.error('Erro ao carregar locações:', error)
+      next: rentals => {
+        this.rentals = rentals.map(rental => ({
+          ...rental,
+          customerName: rental.customer?.name || 'Cliente'
+        }));
+        this.isLoadingRentals = false;
+      },
+      error: error => {
+        console.error('Erro ao carregar locações:', error);
+        this.rentalLoadError = 'Não foi possível carregar o histórico de locações.';
+        this.isLoadingRentals = false;
+      }
     });
   }
 
@@ -85,6 +96,24 @@ export class RentalComponent implements OnInit {
       next: customers => this.customers = customers,
       error: error => console.error('Erro ao carregar clientes:', error)
     });
+  }
+
+  loadInventoryItems(): void {
+    this.inventoryService.getItems().subscribe({
+      next: items => this.inventoryItems = items,
+      error: error => {
+        console.error('Erro ao carregar produtos do inventário para locação:', error);
+        alert('Não foi possível carregar os produtos do inventário.');
+      }
+    });
+  }
+
+  get availableInventoryItems(): InventoryItem[] {
+    return this.inventoryItems.filter(item => item.availableForRental === true && item.quantity > 0);
+  }
+
+  getAvailableQuantity(inventoryItemId: number): number {
+    return this.inventoryItems.find(item => item.id === inventoryItemId)?.quantity ?? 0;
   }
 
   startNewRental(): void {
@@ -102,8 +131,7 @@ export class RentalComponent implements OnInit {
     this.rentalForm = {
       rentalCode: '',
       customerName: '',
-      productCode: '',
-      productName: '',
+      inventoryItemId: null,
       quantity: 1,
       dailyRate: 0,
       rentalDays: 1,
@@ -112,27 +140,28 @@ export class RentalComponent implements OnInit {
     };
   }
 
+  selectInventoryItem(inventoryItemId: number | null): void {
+    this.rentalForm.inventoryItemId = inventoryItemId;
+    const item = this.inventoryItems.find(inventoryItem => inventoryItem.id === inventoryItemId);
+    this.rentalForm.dailyRate = item?.unitPrice ?? 0;
+  }
+
   applyBarcodeToRental(barcode: string): void {
     const normalized = barcode?.trim();
     if (!normalized) {
       return;
     }
 
-    this.rentalForm.productCode = normalized;
-    const item = this.barcodeCatalog[normalized];
-    if (item) {
-      this.rentalForm.productName = item.productName;
-      this.rentalForm.dailyRate = item.dailyRate;
+    const item = this.inventoryItems.find(inventoryItem =>
+      inventoryItem.productCode === normalized && inventoryItem.availableForRental === true
+    );
+    if (!item || item.quantity <= 0) {
+      alert('Produto não encontrado no inventário ou sem estoque disponível.');
       return;
     }
 
-    this.inventoryService.getItemByCode(normalized).subscribe({
-      next: (inventoryItem: InventoryItem) => {
-        this.rentalForm.productName = inventoryItem.productName;
-        this.rentalForm.dailyRate = inventoryItem.unitPrice;
-      },
-      error: () => console.warn('Produto não encontrado para o código:', normalized)
-    });
+    this.selectInventoryItem(item.id ?? null);
+    this.barcodeLookup = normalized;
   }
 
   async readRentalBarcode(): Promise<void> {
@@ -142,8 +171,9 @@ export class RentalComponent implements OnInit {
       return;
     }
 
+    let stream: MediaStream | undefined;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       const video = document.createElement('video');
       video.srcObject = stream;
       video.setAttribute('playsinline', 'true');
@@ -157,31 +187,46 @@ export class RentalComponent implements OnInit {
       } else {
         alert('Nenhum código de barras foi detectado. Tente novamente.');
       }
-
-      stream.getTracks().forEach(track => track.stop());
     } catch (error) {
       console.error('Erro ao ler código de barras da locação:', error);
       alert('Não foi possível acessar a câmera. Use o campo manualmente.');
+    } finally {
+      stream?.getTracks().forEach(track => track.stop());
     }
   }
 
   saveRental(): void {
-    if (!this.rentalForm.customerName || !this.rentalForm.productCode || !this.rentalForm.productName) {
-      alert('Informe cliente, produto e código para registrar a locação.');
+    if (this.isSavingRental) {
+      return;
+    }
+    const inventoryItem = this.inventoryItems.find(item => item.id === this.rentalForm.inventoryItemId);
+    if (!this.rentalForm.customerName || !inventoryItem) {
+      alert('Selecione um cliente e um produto cadastrado no inventário.');
       return;
     }
 
     const customer = this.customers.find(item => item.name.toLowerCase() === this.rentalForm.customerName.trim().toLowerCase());
     if (!customer?.id) {
-      alert('Selecione um cliente cadastrado na API informando o nome exato.');
+      alert('Selecione um cliente cadastrado.');
+      return;
+    }
+    if (!Number.isInteger(this.rentalForm.quantity) || this.rentalForm.quantity <= 0
+        || this.rentalForm.quantity > inventoryItem.quantity) {
+      alert(`Informe uma quantidade válida. Disponível: ${inventoryItem.quantity}.`);
+      return;
+    }
+    if (!Number.isInteger(this.rentalForm.rentalDays) || this.rentalForm.rentalDays <= 0
+        || !Number.isFinite(this.rentalForm.dailyRate) || this.rentalForm.dailyRate < 0) {
+      alert('Confira a duração e o valor diário da locação.');
       return;
     }
 
     const rental: Rental = {
       rentalCode: this.rentalForm.rentalCode,
       customer,
-      productCode: this.rentalForm.productCode,
-      productName: this.rentalForm.productName,
+      inventoryItemId: inventoryItem.id,
+      productCode: inventoryItem.productCode ?? '',
+      productName: inventoryItem.productName,
       quantity: Number(this.rentalForm.quantity),
       dailyRate: Number(this.rentalForm.dailyRate),
       rentalDays: Number(this.rentalForm.rentalDays),
@@ -192,45 +237,85 @@ export class RentalComponent implements OnInit {
       notes: this.rentalForm.notes
     };
 
+    this.isSavingRental = true;
     this.rentalService.createRental(rental).subscribe({
       next: created => {
         this.rentals.unshift({ ...created, customerName: created.customer?.name || customer.name });
         this.isCreatingRental = false;
         this.stripForm();
+        this.loadInventoryItems();
+        this.isSavingRental = false;
         alert('Locação cadastrada com sucesso!');
       },
       error: error => {
         console.error('Erro ao cadastrar locação:', error);
-        alert('Não foi possível cadastrar a locação.');
+        this.isSavingRental = false;
+        this.loadInventoryItems();
+        alert(error.error?.message || 'Não foi possível cadastrar a locação.');
       }
     });
   }
 
   returnRental(item: any): void {
-    if (!item.id) {
+    if (!item.id || this.returningRentalIds.has(item.id) || item.status === 'RETURNED') {
       return;
     }
 
+    if (!window.confirm(`Confirmar a devolução da locação "${item.rentalCode}"? O produto retornará ao estoque.`)) {
+      return;
+    }
+
+    this.returningRentalIds = new Set(this.returningRentalIds).add(item.id);
     this.rentalService.returnRental(item.id).subscribe({
       next: returned => {
         Object.assign(item, returned, { customerName: returned.customer?.name || item.customerName });
+        this.returningRentalIds.delete(item.id);
+        this.loadInventoryItems();
         alert(`Devolução registrada para ${item.rentalCode}.`);
       },
       error: error => {
         console.error('Erro ao registrar devolução:', error);
-        alert('Não foi possível registrar a devolução.');
+        this.returningRentalIds.delete(item.id);
+        alert(error.error?.message || 'Não foi possível registrar a devolução.');
+      }
+    });
+  }
+
+  deleteRental(item: any): void {
+    if (!item.id || this.deletingRentalIds.has(item.id) || item.status === 'RETURNED') {
+      return;
+    }
+
+    if (!window.confirm(`Excluir a locação "${item.rentalCode}"? Esta ação removerá o registro e devolverá o estoque ao inventário.`)) {
+      return;
+    }
+
+    this.deletingRentalIds = new Set(this.deletingRentalIds).add(item.id);
+    this.rentalService.deleteRental(item.id).subscribe({
+      next: () => {
+        this.rentals = this.rentals.filter(rental => rental.id !== item.id);
+        this.deletingRentalIds.delete(item.id);
+        this.loadInventoryItems();
+        alert(`Locação "${item.rentalCode}" excluída com sucesso.`);
+      },
+      error: error => {
+        console.error('Erro ao excluir locação:', error);
+        this.deletingRentalIds.delete(item.id);
+        alert(error.error?.message || 'Não foi possível excluir a locação.');
       }
     });
   }
 
   generateReceipt(rental: any): string {
     const startDate = rental.startDate ? new Date(rental.startDate).toLocaleDateString('pt-BR') : 'Não informado';
-    const endDate = rental.returnDate ? new Date(rental.returnDate).toLocaleDateString('pt-BR') : 'Em aberto';
+    const endDate = rental.actualReturnDate
+      ? new Date(rental.actualReturnDate).toLocaleDateString('pt-BR')
+      : 'Em aberto';
 
     return [
       this.company?.name || 'Empresa',
       [this.company?.document, this.company?.phone].filter(Boolean).join(' | '),
-      [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', '),
+      [this.company?.address, this.company?.addressNumber, this.company?.neighborhood, this.company?.city, this.company?.state, this.company?.zipCode].filter(Boolean).join(', '),
       '',
       'RECIBO DE LOCAÇÃO',
       '================',
@@ -238,23 +323,25 @@ export class RentalComponent implements OnInit {
       `Cliente: ${rental.customerName}`,
       `Produto: ${rental.productName}`,
       `Quantidade: ${rental.quantity}`,
-      `Valor diário: R$ ${Number(rental.dailyRate || 0).toFixed(2)}`,
+      `Valor diário: ${Number(rental.dailyRate || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
       `Período: ${rental.rentalDays} dias`,
       `Data de início: ${startDate}`,
       `Data de devolução: ${endDate}`,
-      `Total: R$ ${Number(rental.totalAmount || 0).toFixed(2)}`,
+      `Total: ${Number(rental.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
       '================',
       this.company?.printFooter || 'Obrigado pela preferência!'
     ].join('\n');
   }
 
   generateReturnReceipt(rental: any): string {
-    const returnedAt = rental.returnDate ? new Date(rental.returnDate).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
+    const returnedAt = rental.actualReturnDate
+      ? new Date(rental.actualReturnDate).toLocaleDateString('pt-BR')
+      : new Date().toLocaleDateString('pt-BR');
 
     return [
       this.company?.name || 'Empresa',
       [this.company?.document, this.company?.phone].filter(Boolean).join(' | '),
-      [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', '),
+      [this.company?.address, this.company?.addressNumber, this.company?.neighborhood, this.company?.city, this.company?.state, this.company?.zipCode].filter(Boolean).join(', '),
       '',
       'RECIBO DE DEVOLUÇÃO DE LOCAÇÃO',
       '================',
@@ -263,47 +350,66 @@ export class RentalComponent implements OnInit {
       `Produto: ${rental.productName}`,
       `Quantidade: ${rental.quantity}`,
       `Data da devolução: ${returnedAt}`,
-      `Valor total locado: R$ ${Number(rental.totalAmount || 0).toFixed(2)}`,
+      `Valor total locado: ${Number(rental.totalAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
       `Status: ${rental.status === 'RETURNED' ? 'Devolvido' : 'Concluído'}`,
       '================',
       this.company?.printFooter || 'Obrigado pela preferência!'
     ].join('\n');
   }
 
+  previewReceipt(rental: Rental, isReturnReceipt = false): void {
+    this.receiptPreviewTitle = isReturnReceipt ? 'Recibo de devolução de locação' : 'Recibo de locação';
+    this.receiptPreview = isReturnReceipt
+      ? this.generateReturnReceipt(rental)
+      : this.generateReceipt(rental);
+  }
+
+  closeReceiptPreview(): void {
+    this.receiptPreview = '';
+    this.receiptPreviewTitle = '';
+  }
+
+  printReceiptPreview(): void {
+    if (this.receiptPreview) {
+      this.openReceiptWindow(this.receiptPreviewTitle, this.receiptPreview);
+    }
+  }
+
   private openReceiptWindow(title: string, receipt: string): void {
     const printWindow = window.open('', '_blank', 'width=500,height=700');
     if (!printWindow) {
+      alert('O navegador bloqueou a janela de impressão. Permita pop-ups para este site e tente novamente.');
       return;
     }
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>${title}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
-            pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
-            .logo { display: block; max-width: 180px; max-height: 80px; margin: 0 auto 16px; }
-            .company-name { text-align: center; margin: 0 0 12px; font-size: 20px; }
-          </style>
-        </head>
-        <body>
-          ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" class="logo">` : ''}
-          <h2 class="company-name">${this.company?.name || 'Empresa'}</h2>
-          <pre>${receipt}</pre>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    const document = printWindow.document;
+    document.title = title;
+    const style = document.createElement('style');
+    style.textContent = 'body { font-family: Arial, sans-serif; padding: 24px; color: #111827; } pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; } .logo { display: block; max-width: 180px; max-height: 80px; margin: 0 auto 16px; } .company-name { text-align: center; margin: 0 0 12px; font-size: 20px; }';
+    document.head.appendChild(style);
+    if (this.company?.logoData) {
+      const logo = document.createElement('img');
+      logo.src = this.company.logoData;
+      logo.alt = 'Logo';
+      logo.className = 'logo';
+      document.body.appendChild(logo);
+    }
+    const heading = document.createElement('h2');
+    heading.className = 'company-name';
+    heading.textContent = this.company?.name || 'Empresa';
+    document.body.appendChild(heading);
+    const content = document.createElement('pre');
+    content.textContent = receipt;
+    document.body.appendChild(content);
     printWindow.focus();
     setTimeout(() => printWindow.print(), 300);
   }
 
-  printReceipt(rental: any): void {
+  printReceipt(rental: Rental): void {
     this.openReceiptWindow('Recibo de locação', this.generateReceipt(rental));
   }
 
-  printReturnReceipt(rental: any): void {
+  printReturnReceipt(rental: Rental): void {
     this.openReceiptWindow('Recibo de devolução de locação', this.generateReturnReceipt(rental));
   }
 }

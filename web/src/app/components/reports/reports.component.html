@@ -43,11 +43,11 @@
               <div class="text-sm text-gray-600 dark:text-gray-300">Vendas Totais</div>
             </div>
             <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
-              <div class="text-2xl font-bold text-gray-800 dark:text-white">R$ {{ salesData.totalRevenue | number:'1.2-2' }}</div>
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ salesData.totalRevenue | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
               <div class="text-sm text-gray-600 dark:text-gray-300">Receita Total</div>
             </div>
             <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
-              <div class="text-2xl font-bold text-gray-800 dark:text-white">R$ {{ salesData.averageSale | number:'1.2-2' }}</div>
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ salesData.averageSale | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
               <div class="text-sm text-gray-600 dark:text-gray-300">Ticket Médio</div>
             </div>
             <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
@@ -79,7 +79,7 @@
               <div class="text-sm text-gray-600 dark:text-gray-300">Itens em Estoque</div>
             </div>
             <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
-              <div class="text-2xl font-bold text-gray-800 dark:text-white">R$ {{ inventoryData.totalValue | number:'1.2-2' }}</div>
+              <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ inventoryData.totalValue | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
               <div class="text-sm text-gray-600 dark:text-gray-300">Valor Total</div>
             </div>
             <div class="text-center p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
@@ -124,7 +124,7 @@
               </div>
               <div class="text-right">
                 <div class="text-sm font-medium text-gray-800 dark:text-white">{{ product.sold }} vendas</div>
-                <div class="text-xs text-gray-600 dark:text-gray-300">R$ {{ product.revenue | number:'1.2-2' }}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-300">{{ product.revenue | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
               </div>
             </div>
           </div>

@@ -29,6 +29,9 @@ public class CompanyService {
         company.setEmail(dto.getEmail());
         company.setPhone(dto.getPhone());
         company.setAddress(dto.getAddress());
+        company.setAddressNumber(dto.getAddressNumber());
+        company.setNeighborhood(dto.getNeighborhood());
+        company.setZipCode(dto.getZipCode());
         company.setCity(dto.getCity());
         company.setState(dto.getState());
         company.setLogoData(dto.getLogoData());

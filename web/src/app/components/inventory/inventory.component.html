@@ -28,7 +28,7 @@
                   {{ getTotalItems() }} Itens
                 </span>
                 <span class="inline-flex items-center px-3 py-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-sm font-medium rounded-xl">
-                  R$ {{ getTotalValue() | number:'1.2-2' }}
+                  {{ getTotalValue() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
                 </span>
               </div>
             </div>
@@ -69,14 +69,14 @@
               {{ inventory.description }}
             </p>
             <p class="mt-3 text-sm text-gray-700 dark:text-gray-300">
-              {{ inventory.totalItems ?? 0 }} produto(s) · R$ {{ (inventory.totalValue ?? 0) | number:'1.2-2' }}
+              {{ inventory.totalItems ?? 0 }} produto(s) · {{ (inventory.totalValue ?? 0) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
             </p>
-            <div class="mt-4 flex justify-end gap-3 border-t border-gray-200/50 pt-3 dark:border-gray-700/50">
-              <button type="button" (click)="editInventory(inventory)" class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400" aria-label="Editar inventário">
-                <i class="fas fa-edit mr-1"></i>Editar
+            <div class="mt-4 flex justify-end gap-2 border-t border-gray-200/50 pt-3 dark:border-gray-700/50">
+              <button type="button" (click)="editInventory(inventory)" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40" aria-label="Editar inventário" title="Editar inventário">
+                <i class="fas fa-edit"></i>
               </button>
-              <button type="button" (click)="deleteInventory(inventory)" class="text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400" aria-label="Excluir inventário">
-                <i class="fas fa-trash mr-1"></i>Excluir
+              <button type="button" (click)="deleteInventory(inventory)" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 dark:border-red-700 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40" aria-label="Excluir inventário" title="Excluir inventário">
+                <i class="fas fa-trash"></i>
               </button>
             </div>
           </article>
@@ -155,6 +155,17 @@
               class="mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             />
           </div>
+          <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-3 py-3 dark:border-gray-700">
+            <input
+              [(ngModel)]="newProduct.availableForRental"
+              type="checkbox"
+              class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <span>
+              <span class="block text-sm font-medium text-gray-700 dark:text-gray-300">Disponível para locação</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400">Habilite para exibir este produto no cadastro de locações.</span>
+            </span>
+          </label>
           <div>
             <label for="product-unit-price" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Preço unit.</label>
             <input
@@ -225,7 +236,7 @@
           </div>
           <div class="ml-4">
             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Valor Total</dt>
-            <dd class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">R$ {{ getTotalValue() | number:'1.2-2' }}</dd>
+            <dd class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{{ getTotalValue() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</dd>
           </div>
         </div>
       </div>
@@ -338,10 +349,10 @@
                                 placeholder="Código de barras"
                                 aria-label="Código de barras do produto"
                               />
-                              <button (click)="saveBarcode(item)" class="text-green-600 hover:text-green-800" aria-label="Salvar código de barras">
+                              <button (click)="saveBarcode(item)" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-green-200 bg-green-50 text-green-600 transition hover:bg-green-100 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40" aria-label="Salvar código de barras" title="Salvar código de barras">
                                 <i class="fas fa-check"></i>
                               </button>
-                              <button (click)="cancelBarcodeEdit()" class="text-gray-500 hover:text-gray-700" aria-label="Cancelar edição do código de barras">
+                              <button (click)="cancelBarcodeEdit()" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" aria-label="Cancelar edição do código de barras" title="Cancelar edição do código de barras">
                                 <i class="fas fa-times"></i>
                               </button>
                             </div>
@@ -361,10 +372,10 @@
                     {{ item.quantity }}
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    R$ {{ item.unitPrice | number:'1.2-2' }}
+                    {{ item.unitPrice | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    R$ {{ (item.quantity * item.unitPrice) | number:'1.2-2' }}
+                    {{ (item.quantity * item.unitPrice) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {{ item.expirationDate || '—' }}
@@ -379,14 +390,14 @@
                     </span>
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
-                      <button type="button" (click)="editInventoryProduct(item)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200" aria-label="Editar produto">
+                    <div class="flex justify-end gap-2">
+                      <button type="button" (click)="editInventoryProduct(item)" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40" aria-label="Editar produto" title="Editar produto">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button type="button" (click)="editBarcode(item)" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors duration-200" [attr.aria-label]="item.productCode ? 'Editar código de barras' : 'Adicionar código de barras'">
+                      <button type="button" (click)="editBarcode(item)" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400 dark:hover:bg-indigo-900/40" [attr.aria-label]="item.productCode ? 'Editar código de barras' : 'Adicionar código de barras'" [title]="item.productCode ? 'Editar código de barras' : 'Adicionar código de barras'">
                         <i class="fas fa-barcode"></i>
                       </button>
-                      <button type="button" (click)="deleteInventoryProduct(item)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200" aria-label="Excluir produto">
+                      <button type="button" (click)="deleteInventoryProduct(item)" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 dark:border-red-700 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40" aria-label="Excluir produto" title="Excluir produto">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>

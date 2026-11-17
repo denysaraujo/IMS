@@ -10,6 +10,9 @@ export interface Company {
   email?: string;
   phone?: string;
   address?: string;
+  addressNumber?: string;
+  neighborhood?: string;
+  zipCode?: string;
   city?: string;
   state?: string;
   logoData?: string;

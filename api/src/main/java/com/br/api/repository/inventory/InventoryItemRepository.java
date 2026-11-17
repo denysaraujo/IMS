@@ -1,8 +1,11 @@
 package com.br.api.repository.inventory;
 
 import com.br.api.model.inventory.InventoryItem;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -13,6 +16,14 @@ import java.util.Optional;
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
     
     Optional<InventoryItem> findByProductCode(String productCode);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT item FROM InventoryItem item WHERE item.id = :id")
+    Optional<InventoryItem> findByIdForUpdate(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT item FROM InventoryItem item WHERE item.productCode = :productCode")
+    Optional<InventoryItem> findByProductCodeForUpdate(@Param("productCode") String productCode);
     
     List<InventoryItem> findByProductNameContainingIgnoreCase(String productName);
     

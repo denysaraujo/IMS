@@ -299,20 +299,24 @@
           </div>
 
           <!-- Botões de Ação -->
-          <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
+          <div class="flex justify-end gap-2 mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
             <button (click)="startEdit()"
-                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <i class="fas fa-edit mr-2"></i>
-              Editar Cliente
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    title="Editar cliente"
+                    aria-label="Editar cliente">
+              <i class="fas fa-edit"></i>
             </button>
             <button (click)="deleteCustomer(selectedCustomer)"
-                    class="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <i class="fas fa-trash mr-2"></i>
-              Excluir Cliente
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    title="Excluir cliente"
+                    aria-label="Excluir cliente">
+              <i class="fas fa-trash"></i>
             </button>
             <button (click)="selectedCustomer = null"
-                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-              Fechar
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                    title="Fechar"
+                    aria-label="Fechar">
+              <i class="fas fa-times"></i>
             </button>
           </div>
         </div>
@@ -419,17 +423,23 @@
                   </td>
 
                   <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
+                    <div class="flex justify-end gap-2">
                       <button (click)="selectCustomer(customer); $event.stopPropagation()"
-                              class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/30">
+                              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
+                              title="Visualizar cliente"
+                              aria-label="Visualizar cliente">
                         <i class="fas fa-eye"></i>
                       </button>
-                      <button (click)="startEdit(); $event.stopPropagation()"
-                              class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30">
+                      <button (click)="startEdit(customer); $event.stopPropagation()"
+                              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                              title="Editar cliente"
+                              aria-label="Editar cliente">
                         <i class="fas fa-edit"></i>
                       </button>
                       <button (click)="deleteCustomer(customer); $event.stopPropagation()"
-                              class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30">
+                              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 dark:border-red-700 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                              title="Excluir cliente"
+                              aria-label="Excluir cliente">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>

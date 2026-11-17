@@ -29,6 +29,9 @@ public class InventoryItem {
     private Integer quantity;
 
     @Column(nullable = false)
+    private boolean availableForRental = false;
+
+    @Column(nullable = false)
     private Integer minStockLevel;
 
     @Column(nullable = false)
@@ -99,6 +102,11 @@ public class InventoryItem {
     public void setQuantity(Integer quantity) { 
         this.quantity = quantity; 
         updateStatus();
+    }
+
+    public boolean isAvailableForRental() { return availableForRental; }
+    public void setAvailableForRental(boolean availableForRental) {
+        this.availableForRental = availableForRental;
     }
 
     public Integer getMinStockLevel() { return minStockLevel; }

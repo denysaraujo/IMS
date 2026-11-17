@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    
+
     <!-- Header Section -->
     <div class="px-4 py-6 sm:px-0">
       <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl overflow-hidden">
@@ -16,7 +16,7 @@
               </p>
             </div>
             <div class="flex space-x-3">
-              <button (click)="startCreate()" 
+              <button (click)="startCreate()"
                       [disabled]="isLoading"
                       class="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
                 <i class="fas fa-plus mr-2"></i>
@@ -73,7 +73,7 @@
                        maxlength="100"
                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento (CPF/CNPJ) *</label>
                 <input type="text" [(ngModel)]="newCustomer.document" name="document" required
@@ -131,35 +131,35 @@
                          maxlength="100"
                          class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número</label>
                   <input type="text" [(ngModel)]="newCustomer.address!.number" name="number"
                          maxlength="10"
                          class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Complemento</label>
                   <input type="text" [(ngModel)]="newCustomer.address!.complement" name="complement"
                          maxlength="50"
                          class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bairro</label>
                   <input type="text" [(ngModel)]="newCustomer.address!.neighborhood" name="neighborhood"
                          maxlength="50"
                          class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cidade</label>
                   <input type="text" [(ngModel)]="newCustomer.address!.city" name="city"
                          maxlength="50"
                          class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
                   <select [(ngModel)]="newCustomer.address!.state" name="state"
@@ -168,9 +168,9 @@
                     <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CEP</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Consultar Endereço por CEP</label>
                   <input type="text" [(ngModel)]="newCustomer.address!.zipCode" name="zipCode"
                         maxlength="9"
                         (ngModelChange)="onZipCodeInput($event)"
@@ -231,7 +231,7 @@
                 </div>
               </dl>
             </div>
-            
+
             <!-- Contato -->
             <div>
               <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">Contato</h4>
@@ -246,7 +246,7 @@
                 </div>
               </dl>
             </div>
-            
+
             <!-- Endereço -->
             <div *ngIf="selectedCustomer.address" class="md:col-span-2">
               <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">Endereço</h4>
@@ -282,7 +282,7 @@
               </dl>
             </div>
           </div>
-          
+
           <!-- Estatísticas (se disponíveis) -->
           <div *ngIf="selectedCustomer.totalOrders !== undefined" class="mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
             <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">Estatísticas</h4>
@@ -297,20 +297,20 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Botões de Ação -->
           <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
-            <button (click)="startEdit()" 
+            <button (click)="startEdit()"
                     class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-edit mr-2"></i>
               Editar Cliente
             </button>
-            <button (click)="deleteCustomer(selectedCustomer)" 
+            <button (click)="deleteCustomer(selectedCustomer)"
                     class="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <i class="fas fa-trash mr-2"></i>
               Excluir Cliente
             </button>
-            <button (click)="selectedCustomer = null" 
+            <button (click)="selectedCustomer = null"
                     class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
               Fechar
             </button>
@@ -369,10 +369,10 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200/50 dark:divide-gray-700/50">
-                <tr *ngFor="let customer of filteredCustomers" 
+                <tr *ngFor="let customer of filteredCustomers"
                     [class.bg-blue-50]="selectedCustomer?.id === customer.id"
                     class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 cursor-pointer">
-                  
+
                   <td class="px-4 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
@@ -388,22 +388,22 @@
                       </div>
                     </div>
                   </td>
-                  
+
                   <td class="px-4 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900 dark:text-white">{{ customer.email || 'Não informado' }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">{{ customer.phone || 'Não informado' }}</div>
                   </td>
-                  
+
                   <td class="px-4 py-4 whitespace-nowrap">
-                    <span [ngClass]="customer.type === 'INDIVIDUAL' ? 
-                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                    <span [ngClass]="customer.type === 'INDIVIDUAL' ?
+                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                           'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'"
                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                       <i [class]="customer.type === 'INDIVIDUAL' ? 'fas fa-user mr-1' : 'fas fa-building mr-1'"></i>
                       {{ getCustomerTypeText(customer.type) }}
                     </span>
                   </td>
-                  
+
                   <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <div class="flex items-center">
                       <i class="fas fa-shopping-cart mr-2 text-gray-400"></i>
@@ -417,7 +417,7 @@
                   <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {{ formatDate(customer.createdAt) }}
                   </td>
-                  
+
                   <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
                       <button (click)="selectCustomer(customer); $event.stopPropagation()"
@@ -435,7 +435,7 @@
                     </div>
                   </td>
                 </tr>
-                
+
                 <!-- Mensagem quando não há clientes -->
                 <tr *ngIf="filteredCustomers.length === 0">
                   <td colspan="6" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">

@@ -149,4 +149,35 @@ public class SaleService {
         }
         saleRepository.save(sale);
     }
+
+    public void deleteSale(Long saleId) {
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+
+        if ("CANCELLED".equals(sale.getStatus())) {
+            throw new RuntimeException("Venda cancelada não pode ser excluída");
+        }
+
+        for (SaleItem item : sale.getItems()) {
+            InventoryItem inventoryItem = item.getInventoryItem();
+            if (inventoryItem == null && item.getProductCode() != null) {
+                inventoryItem = inventoryItemRepository.findByProductCode(item.getProductCode())
+                    .orElseThrow(() -> new RuntimeException("Produto não encontrado para exclusão: " + item.getProductCode()));
+                item.setInventoryItem(inventoryItem);
+            }
+            if (inventoryItem == null) {
+                throw new RuntimeException("Produto não encontrado para exclusão: " + item.getProductName());
+            }
+            if ("COMPLETED".equals(sale.getStatus())) {
+                inventoryItem.addStock(item.getQuantity());
+                inventoryItemRepository.save(inventoryItem);
+                if (inventoryItem.getInventory() != null) {
+                    inventoryItem.getInventory().calculateTotals();
+                    inventoryRepository.save(inventoryItem.getInventory());
+                }
+            }
+        }
+
+        saleRepository.delete(sale);
+    }
 }

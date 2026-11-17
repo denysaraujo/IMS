@@ -27,6 +27,45 @@
       </div>
     </div>
 
+    <!-- Quick Actions -->
+    <div class="mt-8">
+      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
+            <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+            Ações Rápidas
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button (click)="navigateToSales()"
+                    class="group p-4 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <i class="fas fa-shopping-cart text-lg mb-2"></i>
+              <p class="text-sm font-medium">Nova Venda</p>
+            </button>
+
+            <button (click)="navigateToRentals()"
+                    class="group p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <i class="fas fa-plus text-lg mb-2"></i>
+              <p class="text-sm font-medium">Nova Locação</p>
+            </button>
+
+            <button (click)="navigateToInventory()"
+                    class="group p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <i class="fas fa-boxes text-lg mb-2"></i>
+              <p class="text-sm font-medium">Ver Estoque</p>
+            </button>
+
+            <button (click)="navigateToSettings()"
+                    class="group p-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <i class="fas fa-cog text-lg mb-2"></i>
+              <p class="text-sm font-medium">Configurações</p>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Stats Grid -->
     <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       <div
@@ -204,45 +243,6 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">{{ lastLogin }}</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="mt-8">
-      <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg overflow-hidden">
-        <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
-          <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center">
-            <i class="fas fa-bolt mr-2 text-yellow-500"></i>
-            Ações Rápidas
-          </h3>
-        </div>
-        <div class="p-6">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button (click)="navigateToInventory()"
-                    class="group p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <i class="fas fa-plus text-lg mb-2"></i>
-              <p class="text-sm font-medium">Novo Produto</p>
-            </button>
-
-            <button (click)="navigateToSales()"
-                    class="group p-4 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <i class="fas fa-shopping-cart text-lg mb-2"></i>
-              <p class="text-sm font-medium">Nova Venda</p>
-            </button>
-
-            <button (click)="navigateToInventory()"
-                    class="group p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <i class="fas fa-boxes text-lg mb-2"></i>
-              <p class="text-sm font-medium">Ver Estoque</p>
-            </button>
-
-            <button (click)="navigateToSettings()"
-                    class="group p-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl text-white text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <i class="fas fa-cog text-lg mb-2"></i>
-              <p class="text-sm font-medium">Configurações</p>
-            </button>
           </div>
         </div>
       </div>

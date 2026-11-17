@@ -126,4 +126,9 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/users']);
   }
 
+  // Navegação para Locações
+  navigateToRentals() {
+    this.router.navigate(['/rentals']);
+  }
+
 }

@@ -58,15 +58,15 @@ export class ReportsComponent implements OnInit {
         ${this.company?.logoData ? `<img src="${this.company.logoData}" alt="Logo" style="max-width:180px;max-height:80px;">` : ''}
         <h1>${this.company?.name || 'Empresa'}</h1>
         <p>${[this.company?.document, this.company?.phone, this.company?.email].filter(Boolean).join(' | ')}</p>
-        <p>${[this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', ')}</p>
+        <p>${[this.company?.address, this.company?.addressNumber, this.company?.neighborhood, this.company?.city, this.company?.state, this.company?.zipCode].filter(Boolean).join(', ')}</p>
         <hr>
         <h2>Relatório de vendas e estoque</h2>
         <h3>Vendas</h3>
-        <p>Vendas totais: ${this.salesData.totalSales} | Receita: R$ ${this.salesData.totalRevenue.toFixed(2)} | Ticket médio: R$ ${this.salesData.averageSale.toFixed(2)} | Itens: ${this.salesData.itemsSold}</p>
+        <p>Vendas totais: ${this.salesData.totalSales} | Receita: ${this.salesData.totalRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} | Ticket médio: ${this.salesData.averageSale.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} | Itens: ${this.salesData.itemsSold}</p>
         <h3>Estoque</h3>
-        <p>Itens: ${this.inventoryData.totalItems} | Valor: R$ ${this.inventoryData.totalValue.toFixed(2)} | Estoque baixo: ${this.inventoryData.lowStock} | Sem estoque: ${this.inventoryData.outOfStock}</p>
+        <p>Itens: ${this.inventoryData.totalItems} | Valor: ${this.inventoryData.totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} | Estoque baixo: ${this.inventoryData.lowStock} | Sem estoque: ${this.inventoryData.outOfStock}</p>
         <h3>Produtos mais vendidos</h3>
-        <ul>${this.topProducts.map(product => `<li>${product.name}: ${product.sold} vendas, R$ ${product.revenue.toFixed(2)}</li>`).join('')}</ul>
+        <ul>${this.topProducts.map(product => `<li>${product.name}: ${product.sold} vendas, ${product.revenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</li>`).join('')}</ul>
         <hr><p>${this.company?.printFooter || ''}</p>
       </body></html>`);
     printWindow.document.close();

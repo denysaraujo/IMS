@@ -27,6 +27,10 @@ export class SalesComponent implements OnInit {
   isCreatingSale: boolean = false;
   isProcessingSale = false;
   readonly cancelingSaleIds = new Set<number>();
+  readonly deletingSaleIds = new Set<number>();
+  receiptPreviewTitle = '';
+  receiptPreview = '';
+  selectedSalePreview: Sale | null = null;
 
   // newSale inicializado corretamente
   newSale: Sale = {
@@ -93,7 +97,9 @@ export class SalesComponent implements OnInit {
 
   loadInventoryProducts(): void {
     this.inventoryService.getItems().subscribe({
-      next: products => this.inventoryProducts = products,
+      next: products => {
+        this.inventoryProducts = products.filter(item => item.availableForRental !== true);
+      },
       error: error => {
         console.error('Erro ao carregar produtos do estoque para a venda:', error);
         alert('Não foi possível carregar os produtos do estoque.');
@@ -289,6 +295,32 @@ export class SalesComponent implements OnInit {
     });
   }
 
+  deleteSale(sale: Sale): void {
+    if (sale.id == null || sale.status === 'CANCELLED' || this.deletingSaleIds.has(sale.id)) {
+      return;
+    }
+
+    if (!window.confirm(`Excluir a venda "${sale.saleCode}"? Esta ação removerá o registro e devolverá os itens ao estoque, se necessário.`)) {
+      return;
+    }
+
+    const saleId = sale.id;
+    this.deletingSaleIds.add(saleId);
+    this.saleService.deleteSale(saleId).subscribe({
+      next: () => {
+        this.deletingSaleIds.delete(saleId);
+        this.sales = this.sales.filter(entry => entry.id !== saleId);
+        this.loadInventoryProducts();
+        alert(`Venda "${sale.saleCode}" excluída com sucesso.`);
+      },
+      error: error => {
+        this.deletingSaleIds.delete(saleId);
+        console.error('Erro ao excluir venda:', error);
+        alert(error.error?.message || 'Não foi possível excluir a venda.');
+      }
+    });
+  }
+
   cancelSaleCreation() {
     this.isCreatingSale = false;
     this.selectedCustomer = null;
@@ -320,6 +352,41 @@ export class SalesComponent implements OnInit {
     return this.sales.filter(sale => sale.status === 'CANCELLED').length;
   }
 
+  formatSaleDate(value: string | null | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    const parts = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Recife',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).formatToParts(date);
+
+    const values = Object.fromEntries(
+      parts.filter(part => part.type !== 'literal').map(part => [part.type, part.value])
+    ) as Record<string, string>;
+
+    const day = values['day'] ?? '00';
+    const month = values['month'] ?? '00';
+    const year = values['year'] ?? '0000';
+    const hour = values['hour'] ?? '00';
+    const minute = values['minute'] ?? '00';
+    const second = values['second'] ?? '00';
+
+    return `${day}-${month}-${year} ${hour}:${minute}:${second}`;
+  }
+
   private formatCurrency(value: number): string {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
@@ -348,7 +415,7 @@ export class SalesComponent implements OnInit {
       return lines.join('\n');
     }).join('\n') || 'Nenhum item';
 
-    const address = [this.company?.address, this.company?.city, this.company?.state].filter(Boolean).join(', ');
+    const address = [this.company?.address, this.company?.addressNumber, this.company?.neighborhood, this.company?.city, this.company?.state, this.company?.zipCode].filter(Boolean).join(', ');
     const footer = this.company?.printFooter || 'Obrigado pela preferência!';
     const saleTotal = this.formatCurrency(sale.totalAmount || 0);
 
@@ -373,6 +440,18 @@ export class SalesComponent implements OnInit {
       '================================',
       footer.toUpperCase()
     ].join('\n');
+  }
+
+  previewReceipt(sale: Sale): void {
+    this.selectedSalePreview = sale;
+    this.receiptPreviewTitle = `Comprovante de venda - ${sale.saleCode}`;
+    this.receiptPreview = this.generateReceipt(sale);
+  }
+
+  closeReceiptPreview(): void {
+    this.selectedSalePreview = null;
+    this.receiptPreview = '';
+    this.receiptPreviewTitle = '';
   }
 
   printReceipt(sale: Sale): void {

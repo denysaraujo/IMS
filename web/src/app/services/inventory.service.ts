@@ -26,6 +26,7 @@ export interface InventoryItem {
   description?: string;
   category: string;
   quantity: number;
+  availableForRental?: boolean;
   minStockLevel: number;
   maxStockLevel: number;
   unitPrice: number;

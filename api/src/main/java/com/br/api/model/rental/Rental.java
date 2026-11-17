@@ -1,6 +1,8 @@
 package com.br.api.model.rental;
 
 import com.br.api.model.customer.Customer;
+import com.br.api.model.inventory.InventoryItem;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -20,7 +22,7 @@ public class Rental {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @Column(nullable = false)
+    @Column
     private String productCode;
 
     @Column(nullable = false)
@@ -59,6 +61,14 @@ public class Rental {
 
     private String notes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_item_id")
+    @JsonIgnore
+    private InventoryItem inventoryItem;
+
+    @Transient
+    private Long requestedInventoryItemId;
+
     public Rental() {
         this.createdAt = LocalDateTime.now();
         this.status = "ACTIVE";
@@ -90,6 +100,19 @@ public class Rental {
 
     public String getProductName() { return productName; }
     public void setProductName(String productName) { this.productName = productName; }
+
+    public Long getInventoryItemId() {
+        return requestedInventoryItemId != null
+            ? requestedInventoryItemId
+            : inventoryItem == null ? null : inventoryItem.getId();
+    }
+
+    public void setInventoryItemId(Long inventoryItemId) {
+        this.requestedInventoryItemId = inventoryItemId;
+    }
+
+    public InventoryItem getInventoryItem() { return inventoryItem; }
+    public void setInventoryItem(InventoryItem inventoryItem) { this.inventoryItem = inventoryItem; }
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }

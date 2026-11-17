@@ -176,32 +176,37 @@ export class CustomersComponent implements OnInit {
     this.errorMessage = '';
   }
 
-  startEdit() {
-    if (this.selectedCustomer) {
-      this.resetZipCodeLookup();
-      // Busca os dados completos do cliente antes de editar
-      this.isLoading = true;
-      this.customerService.getCustomer(this.selectedCustomer.id!).subscribe({
-        next: (customer) => {
-          this.newCustomer = { 
-            ...customer,
-            address: customer.address ? { ...customer.address } : {
-              street: '', number: '', complement: '', neighborhood: '',
-              city: '', state: '', zipCode: '', country: 'Brasil'
-            }
-          };
-          this.isEditing = true;
-          this.isCreating = false;
-          this.errorMessage = '';
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Erro ao carregar dados do cliente:', error);
-          this.errorMessage = 'Erro ao carregar dados do cliente';
-          this.isLoading = false;
-        }
-      });
+  startEdit(customer?: Customer) {
+    const targetCustomer = customer ?? this.selectedCustomer;
+
+    if (!targetCustomer) {
+      this.errorMessage = 'Selecione um cliente para editar.';
+      return;
     }
+
+    this.selectedCustomer = targetCustomer;
+    this.resetZipCodeLookup();
+    this.isLoading = true;
+    this.customerService.getCustomer(targetCustomer.id!).subscribe({
+      next: (customer) => {
+        this.newCustomer = {
+          ...customer,
+          address: customer.address ? { ...customer.address } : {
+            street: '', number: '', complement: '', neighborhood: '',
+            city: '', state: '', zipCode: '', country: 'Brasil'
+          }
+        };
+        this.isEditing = true;
+        this.isCreating = false;
+        this.errorMessage = '';
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Erro ao carregar dados do cliente:', error);
+        this.errorMessage = 'Erro ao carregar dados do cliente';
+        this.isLoading = false;
+      }
+    });
   }
 
   validateCustomer(): boolean {

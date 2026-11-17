@@ -7,6 +7,7 @@ export interface Rental {
   id?: number;
   rentalCode: string;
   customer: Customer;
+  inventoryItemId?: number;
   productCode: string;
   productName: string;
   quantity: number;
@@ -37,5 +38,9 @@ export class RentalService {
 
   returnRental(id: number): Observable<Rental> {
     return this.http.put<Rental>(`${this.apiUrl}/${id}/return`, {});
+  }
+
+  deleteRental(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

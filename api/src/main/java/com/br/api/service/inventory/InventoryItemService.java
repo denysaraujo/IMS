@@ -86,6 +86,7 @@ public class InventoryItemService {
                 item.setDescription(itemDetails.getDescription());
                 item.setCategory(itemDetails.getCategory());
                 item.setQuantity(itemDetails.getQuantity());
+                item.setAvailableForRental(itemDetails.isAvailableForRental());
                 item.setMinStockLevel(itemDetails.getMinStockLevel());
                 item.setMaxStockLevel(itemDetails.getMaxStockLevel());
                 item.setUnitPrice(itemDetails.getUnitPrice());

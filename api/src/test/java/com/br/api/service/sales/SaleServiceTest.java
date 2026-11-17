@@ -191,4 +191,34 @@ class SaleServiceTest {
         verify(saleRepository, never()).save(any(Sale.class));
         verifyNoInteractions(inventoryItemRepository);
     }
+
+    @Test
+    void deleteSale_shouldRestoreCompletedSaleStockAndRemoveRecord() {
+        InventoryItem inventoryItem = new InventoryItem();
+        inventoryItem.setId(15L);
+        inventoryItem.setProductName("Monitor");
+        inventoryItem.setQuantity(4);
+        inventoryItem.setUnitPrice(500.0);
+        Inventory inventory = new Inventory();
+        inventory.setId(22L);
+        inventory.addItem(inventoryItem);
+
+        SaleItem saleItem = new SaleItem(null, "Monitor", 2, 250.0);
+        saleItem.setInventoryItem(inventoryItem);
+
+        Sale sale = new Sale();
+        sale.addItem(saleItem);
+        sale.setStatus("COMPLETED");
+
+        when(saleRepository.findById(25L)).thenReturn(Optional.of(sale));
+        when(inventoryItemRepository.save(any(InventoryItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(inventoryRepository.save(any(Inventory.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        saleService.deleteSale(25L);
+
+        assertEquals(6, inventoryItem.getQuantity());
+        verify(inventoryItemRepository).save(inventoryItem);
+        verify(inventoryRepository).save(inventory);
+        verify(saleRepository).delete(sale);
+    }
 }

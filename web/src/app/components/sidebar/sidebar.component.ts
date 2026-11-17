@@ -82,7 +82,7 @@ export class SidebarComponent implements OnInit {
     const settings = this.menuItems.find(item => item.children);
     if (settings?.children) {
       settings.children = settings.children.filter(child => !child.roles || child.roles.includes(role || ''));
-      settings.isExpanded = role === 'ADMIN';
+      settings.isExpanded = false;
     }
   }
 

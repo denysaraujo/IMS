@@ -1,6 +1,7 @@
 package com.br.api.config;
 
 import com.br.api.security.JwtAuthFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,8 +48,10 @@ public class WebSecurityConfig {
                     "/swagger-resources/**",
                     "/webjars/**",
                     "/error"
-                ).permitAll()
+                )                .permitAll()
                 .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/inventory/items")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR", "ROLE_USER")
                 .requestMatchers("/api/inventory/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR") 
                 .requestMatchers("/api/sales/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR", "ROLE_USER")
                 .requestMatchers("/api/rentals/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR", "ROLE_USER")

@@ -85,4 +85,15 @@ public class SaleController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR', 'USER')")
+    public ResponseEntity<Void> deleteSale(@PathVariable Long id) {
+        try {
+            saleService.deleteSale(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

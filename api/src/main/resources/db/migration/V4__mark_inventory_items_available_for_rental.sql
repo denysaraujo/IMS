@@ -1,2 +1,2 @@
-ALTER TABLE inventory_items
-    ADD COLUMN available_for_rental BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE IF EXISTS inventory_items
+    ADD COLUMN IF NOT EXISTS available_for_rental BOOLEAN NOT NULL DEFAULT FALSE;

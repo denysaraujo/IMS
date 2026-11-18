@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -16,6 +17,7 @@ export class LoginComponent implements OnInit {
   loading = false;
   errorMessage = '';
   returnUrl = '/dashboard';
+  trialEndsAt: string | null = null;
   recoveryMode = false;
   recoveryStep: 'request' | 'reset' = 'request';
   recoveryLoading = false;
@@ -31,6 +33,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     // ✅ Get return url from route parameters or default to '/dashboard'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    this.trialEndsAt = this.route.snapshot.queryParams['trialEndsAt'] || null;
 
     // ✅ Redirect if already logged in
     if (this.authService.isLoggedIn()) {

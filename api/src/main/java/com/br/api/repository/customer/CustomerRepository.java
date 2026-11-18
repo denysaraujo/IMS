@@ -58,4 +58,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
            "FROM Customer c " +
            "ORDER BY c.createdAt DESC")
     List<CustomerWithStatsDTO> findTopCustomers();
+
+    @Query(value = "SELECT company_id, COUNT(*) FROM customers GROUP BY company_id", nativeQuery = true)
+    List<Object[]> countAllByCompany();
 }

@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.TenantId;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -55,6 +56,11 @@ public class User implements UserDetails {
     @Column(name = "credentials_non_expired", nullable = false)
     private boolean credentialsNonExpired = true;
 
+    @TenantId
+    @JsonIgnore
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private Long tenantId;
+
     @Column(name = "login_attempts")
     private Integer loginAttempts = 0;
 
@@ -96,6 +102,10 @@ public class User implements UserDetails {
     // Getters e Setters
     public Long getId() {
         return id;
+    }
+
+    public Long getTenantId() {
+        return tenantId;
     }
 
     public void setId(Long id) {

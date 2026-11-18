@@ -4,18 +4,25 @@ import com.br.api.model.customer.Customer;
 import com.br.api.model.inventory.InventoryItem;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.TenantId;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "rentals")
+@Table(name = "rentals", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_rentals_company_code", columnNames = {"company_id", "rental_code"})
+})
 public class Rental {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @TenantId
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private Long tenantId;
+
+    @Column(nullable = false)
     private String rentalCode;
 
     @ManyToOne(fetch = FetchType.LAZY)

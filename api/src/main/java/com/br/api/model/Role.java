@@ -4,7 +4,8 @@ public enum Role {
     ADMIN("Administrador"),
     USER("Usuário"),
     MANAGER("Gerente"),
-    SUPERVISOR("Supervisor");
+    SUPERVISOR("Supervisor"),
+    PLATFORM_ADMIN("Administrador da plataforma");
 
     private final String displayName;
 

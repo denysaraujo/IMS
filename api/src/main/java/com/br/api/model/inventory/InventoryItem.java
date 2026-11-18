@@ -2,6 +2,7 @@ package com.br.api.model.inventory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.TenantId;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,6 +13,10 @@ public class InventoryItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @TenantId
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private Long tenantId;
 
     @Column
     private String productCode;

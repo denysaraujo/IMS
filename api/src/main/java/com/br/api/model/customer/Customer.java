@@ -10,9 +10,13 @@ import java.util.List;
 import com.br.api.model.address.Address;
 import com.br.api.model.sales.Sale;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.TenantId;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "customers", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_customers_company_document", columnNames = {"company_id", "document"}),
+    @UniqueConstraint(name = "uk_customers_company_email", columnNames = {"company_id", "email"})
+})
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,13 +27,17 @@ public class Customer {
     private String name;
 
     @Email(message = "Email deve ser válido")
-    @Column(unique = true)
+    @Column
     private String email;
 
     private String phone;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String document; // CPF ou CNPJ
+
+    @TenantId
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private Long tenantId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

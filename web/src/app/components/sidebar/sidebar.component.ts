@@ -70,6 +70,20 @@ export class SidebarComponent implements OnInit {
           icon: 'fas fa-building',
           badge: null,
           roles: ['ADMIN']
+        },
+        {
+          label: 'Plano e cobrança',
+          path: '/billing',
+          icon: 'fas fa-credit-card',
+          badge: null,
+          roles: ['ADMIN']
+        },
+        {
+          label: 'Gestão SaaS',
+          path: '/saas-admin',
+          icon: 'fas fa-layer-group',
+          badge: null,
+          roles: ['PLATFORM_ADMIN']
         }
       ]
     },

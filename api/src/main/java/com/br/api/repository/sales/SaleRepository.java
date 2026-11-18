@@ -14,6 +14,8 @@ import java.util.Optional;
 
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Long> {
+    @Query(value = "SELECT company_id, COUNT(*) FROM sales GROUP BY company_id", nativeQuery = true)
+    List<Object[]> countAllByCompany();
 
     @Override
     @EntityGraph(attributePaths = {"customer", "items", "items.inventoryItem"})

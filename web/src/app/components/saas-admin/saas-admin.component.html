@@ -1,0 +1,172 @@
+<main class="mx-auto max-w-7xl p-4 md:p-8">
+  <header class="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Administração da plataforma</p>
+      <h1 class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">Gestão SaaS</h1>
+      <p class="mt-2 text-slate-600 dark:text-gray-300">Empresas, planos, funcionalidades e eventos de cobrança.</p>
+    </div>
+    <button type="button" (click)="loadAll()" class="rounded-lg border border-slate-300 px-4 py-2 font-medium dark:border-gray-700">Atualizar</button>
+  </header>
+
+  <p *ngIf="errorMessage" class="mb-4 rounded-lg bg-red-50 p-4 text-red-700 dark:bg-red-950 dark:text-red-200">{{ errorMessage }}</p>
+  <p *ngIf="successMessage" class="mb-4 rounded-lg bg-green-50 p-4 text-green-700">{{ successMessage }}</p>
+
+  <section *ngIf="!loading" class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+    <article class="rounded-xl bg-white p-4 shadow dark:bg-gray-900">
+      <p class="text-sm text-slate-500">Empresas cadastradas</p>
+      <p class="mt-1 text-2xl font-bold dark:text-white">{{ companies.length }}</p>
+    </article>
+    <article class="rounded-xl bg-white p-4 shadow dark:bg-gray-900">
+      <p class="text-sm text-slate-500">Empresas habilitadas</p>
+      <p class="mt-1 text-2xl font-bold dark:text-white">{{ enabledCompanyCount }}</p>
+    </article>
+    <article class="rounded-xl bg-white p-4 shadow dark:bg-gray-900">
+      <p class="text-sm text-slate-500">Assinaturas ativas</p>
+      <p class="mt-1 text-2xl font-bold dark:text-white">{{ activeSubscriptionCount }}</p>
+    </article>
+    <article class="rounded-xl bg-white p-4 shadow dark:bg-gray-900">
+      <p class="text-sm text-slate-500">Trials em andamento</p>
+      <p class="mt-1 text-2xl font-bold dark:text-white">{{ activeTrialCount }}</p>
+    </article>
+    <article class="rounded-xl bg-white p-4 shadow dark:bg-gray-900">
+      <p class="text-sm text-slate-500">Pagamentos aprovados registrados</p>
+      <p class="mt-1 text-2xl font-bold dark:text-white">{{ approvedPaymentTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</p>
+    </article>
+  </section>
+
+  <nav class="mb-6 flex flex-wrap gap-2">
+    <button *ngFor="let tab of tabs" type="button" (click)="selectTab(tab.id)"
+      class="rounded-lg px-4 py-2 text-sm font-semibold"
+      [class.bg-blue-600]="activeTab === tab.id"
+      [class.text-white]="activeTab === tab.id"
+      [class.bg-white]="activeTab !== tab.id"
+      [class.dark:bg-gray-900]="activeTab !== tab.id">
+      {{ tab.label }}
+    </button>
+  </nav>
+
+  <p *ngIf="loading" class="py-8 text-center text-slate-500">Carregando dados...</p>
+
+  <section *ngIf="!loading && activeTab === 'companies'" class="overflow-x-auto rounded-xl bg-white shadow dark:bg-gray-900">
+    <table class="w-full min-w-[780px] text-left text-sm">
+      <thead class="bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-300">
+        <tr><th class="p-3">Empresa</th><th class="p-3">E-mail</th><th class="p-3">Plano</th><th class="p-3">Assinatura</th><th class="p-3">Uso (usuários / clientes / estoque / vendas)</th><th class="p-3">Cadastro</th><th class="p-3">Acesso</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let company of companies" class="border-t border-slate-100 dark:border-gray-800">
+          <td class="p-3 font-medium">{{ company.name }}<small class="block text-slate-500">#{{ company.id }} · {{ company.document || 'sem documento' }}</small></td>
+          <td class="p-3">{{ company.email || '—' }}</td>
+          <td class="p-3">{{ company.planName || '—' }}</td>
+          <td class="p-3">{{ company.subscriptionStatus || 'Sem assinatura' }}</td>
+          <td class="p-3">{{ company.userCount }} / {{ company.customerCount }} / {{ company.inventoryItemCount }} / {{ company.saleCount }}</td>
+          <td class="p-3">{{ company.createdAt | date:'shortDate' }}</td>
+          <td class="p-3">
+            <button type="button" (click)="toggleCompany(company)" class="rounded-md px-3 py-1 font-semibold"
+                    [class.bg-red-100]="company.enabled" [class.text-red-700]="company.enabled"
+                    [class.bg-green-100]="!company.enabled" [class.text-green-700]="!company.enabled">
+              {{ company.enabled ? 'Suspender' : 'Reativar' }}
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="companies.length === 0"><td colspan="7" class="p-6 text-center text-slate-500">Nenhuma empresa cadastrada.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section *ngIf="!loading && activeTab === 'plans'" class="grid gap-6 lg:grid-cols-[minmax(280px,0.8fr)_1.2fr]">
+    <form (ngSubmit)="savePlan()" #planNgForm="ngForm" class="space-y-3 rounded-xl bg-white p-5 shadow dark:bg-gray-900">
+      <h2 class="text-lg font-bold dark:text-white">{{ planEditId ? 'Editar plano' : 'Novo plano' }}</h2>
+      <label class="block text-sm">Código<input name="planCode" [(ngModel)]="planForm.code" required pattern="[a-z0-9][a-z0-9_-]*" class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+      <label class="block text-sm">Nome<input name="planName" [(ngModel)]="planForm.name" required class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+      <label class="block text-sm">Descrição<textarea name="planDescription" [(ngModel)]="planForm.description" rows="2" class="mt-1 w-full rounded border p-2 dark:bg-gray-800"></textarea></label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block text-sm">Preço por período<input type="number" name="planAmount" [(ngModel)]="planForm.amount" required min="0.01" step="0.01" class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+        <label class="block text-sm">Intervalo<input type="number" name="planFrequency" [(ngModel)]="planForm.frequency" required min="1" class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+      </div>
+      <fieldset class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <legend class="text-sm font-semibold">Limites por empresa (vazio = ilimitado)</legend>
+        <label class="block text-sm">Usuários<input type="number" min="1" name="planMaxUsers" [(ngModel)]="planForm.maxUsers" class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+        <label class="block text-sm">Clientes<input type="number" min="1" name="planMaxCustomers" [(ngModel)]="planForm.maxCustomers" class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+        <label class="block text-sm">Itens de estoque<input type="number" min="1" name="planMaxInventoryItems" [(ngModel)]="planForm.maxInventoryItems" class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+      </fieldset>
+      <label class="block text-sm">Tipo de intervalo
+        <select name="planFrequencyType" [(ngModel)]="planForm.frequencyType" class="mt-1 w-full rounded border p-2 dark:bg-gray-800">
+          <option value="months">Meses</option><option value="days">Dias</option>
+        </select>
+      </label>
+      <fieldset class="space-y-2">
+        <legend class="text-sm font-semibold">Funcionalidades incluídas</legend>
+        <label *ngFor="let feature of features" class="flex items-center gap-2 text-sm">
+          <input type="checkbox" [checked]="planForm.featureIds.includes(feature.id)" [disabled]="!feature.active" (change)="togglePlanFeature(feature.id)" />
+          {{ feature.name }} <span *ngIf="!feature.active" class="text-xs text-slate-500">(inativa)</span>
+        </label>
+      </fieldset>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="planActive" [(ngModel)]="planForm.active" /> Plano disponível para cadastro</label>
+      <button type="submit" [disabled]="planNgForm.invalid || saving" class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Salvar plano</button>
+      <button *ngIf="planEditId" type="button" (click)="planEditId = null; planForm = emptyPlan()" class="ml-2 px-4 py-2">Cancelar</button>
+    </form>
+
+    <div class="space-y-3">
+      <article *ngFor="let plan of plans" class="rounded-xl bg-white p-5 shadow dark:bg-gray-900">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div><h3 class="font-bold dark:text-white">{{ plan.name }} <small class="font-normal text-slate-500">({{ plan.code }})</small></h3>
+            <p class="mt-1 text-sm text-slate-600 dark:text-gray-300">{{ plan.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }} / {{ plan.frequency }} {{ plan.frequencyType }}</p>
+            <p class="mt-1 text-sm text-slate-500">{{ plan.description }}</p>
+            <p class="mt-2 text-xs text-slate-500">{{ featureNames(plan) || 'Sem funcionalidades' }}</p>
+            <p class="mt-2 text-xs text-slate-500">Limites: {{ formatLimit(plan.maxUsers) }} usuários · {{ formatLimit(plan.maxCustomers) }} clientes · {{ formatLimit(plan.maxInventoryItems) }} itens</p>
+          </div>
+          <div class="flex items-center gap-3"><span [class.text-green-700]="plan.active" [class.text-slate-500]="!plan.active">{{ plan.active ? 'Ativo' : 'Inativo' }}</span>
+            <button type="button" (click)="editPlan(plan)" class="rounded border px-3 py-1 text-sm">Editar</button></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section *ngIf="!loading && activeTab === 'features'" class="grid gap-6 lg:grid-cols-[minmax(280px,0.8fr)_1.2fr]">
+    <form (ngSubmit)="saveFeature()" #featureNgForm="ngForm" class="space-y-3 rounded-xl bg-white p-5 shadow dark:bg-gray-900">
+      <h2 class="text-lg font-bold dark:text-white">{{ featureEditId ? 'Editar funcionalidade' : 'Nova funcionalidade' }}</h2>
+      <label class="block text-sm">Código<input name="featureCode" [(ngModel)]="featureForm.code" required pattern="[a-z0-9][a-z0-9_-]*" class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+      <label class="block text-sm">Nome<input name="featureName" [(ngModel)]="featureForm.name" required class="mt-1 w-full rounded border p-2 dark:bg-gray-800" /></label>
+      <label class="block text-sm">Descrição<textarea name="featureDescription" [(ngModel)]="featureForm.description" class="mt-1 w-full rounded border p-2 dark:bg-gray-800"></textarea></label>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="featureActive" [(ngModel)]="featureForm.active" /> Ativa</label>
+      <button type="submit" [disabled]="featureNgForm.invalid || saving" class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Salvar funcionalidade</button>
+      <button *ngIf="featureEditId" type="button" (click)="featureEditId = null; featureForm = {code: '', name: '', description: '', active: true}" class="ml-2 px-4 py-2">Cancelar</button>
+    </form>
+    <div class="space-y-3">
+      <article *ngFor="let feature of features" class="flex items-center justify-between gap-4 rounded-xl bg-white p-4 shadow dark:bg-gray-900">
+        <div><h3 class="font-semibold dark:text-white">{{ feature.name }} <small class="font-normal text-slate-500">({{ feature.code }})</small></h3><p class="text-sm text-slate-500">{{ feature.description }}</p></div>
+        <button type="button" (click)="editFeature(feature)" class="rounded border px-3 py-1 text-sm">Editar</button>
+      </article>
+    </div>
+  </section>
+
+  <section *ngIf="!loading && activeTab === 'subscriptions'" class="overflow-x-auto rounded-xl bg-white shadow dark:bg-gray-900">
+    <table class="w-full min-w-[760px] text-left text-sm"><thead class="bg-slate-100 dark:bg-gray-800"><tr><th class="p-3">Empresa</th><th class="p-3">Plano</th><th class="p-3">Valor</th><th class="p-3">Status</th><th class="p-3">Mercado Pago</th><th class="p-3">Criada em</th></tr></thead>
+      <tbody><tr *ngFor="let subscription of subscriptions" class="border-t dark:border-gray-800"><td class="p-3">{{ subscription.companyName }} (#{{ subscription.companyId }})</td><td class="p-3">{{ subscription.planName }}</td><td class="p-3">{{ subscription.amount | currency:subscription.currency:'symbol':'1.2-2':'pt-BR' }}</td><td class="p-3">{{ subscription.status }}</td><td class="p-3">{{ subscription.providerSubscriptionId || 'checkout pendente' }}</td><td class="p-3">{{ subscription.createdAt | date:'short' }}</td></tr></tbody>
+    </table>
+  </section>
+
+  <section *ngIf="!loading && activeTab === 'payments'" class="overflow-x-auto rounded-xl bg-white shadow dark:bg-gray-900">
+    <table class="w-full min-w-[760px] text-left text-sm">
+      <thead class="bg-slate-100 dark:bg-gray-800"><tr><th class="p-3">Empresa</th><th class="p-3">Plano</th><th class="p-3">Valor</th><th class="p-3">Status</th><th class="p-3">Pago em</th><th class="p-3">ID Mercado Pago</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let payment of payments" class="border-t dark:border-gray-800">
+          <td class="p-3">{{ payment.companyName }} (#{{ payment.companyId }})</td>
+          <td class="p-3">{{ payment.planName }}</td>
+          <td class="p-3">{{ payment.amount | currency:payment.currency:'symbol':'1.2-2':'pt-BR' }}</td>
+          <td class="p-3">{{ payment.status }}</td>
+          <td class="p-3">{{ payment.paidAt ? (payment.paidAt | date:'short') : '—' }}</td>
+          <td class="p-3">{{ payment.providerPaymentId }}</td>
+        </tr>
+        <tr *ngIf="payments.length === 0"><td colspan="6" class="p-6 text-center text-slate-500">Nenhum pagamento registrado.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section *ngIf="!loading && activeTab === 'events'" class="overflow-x-auto rounded-xl bg-white shadow dark:bg-gray-900">
+    <table class="w-full min-w-[680px] text-left text-sm"><thead class="bg-slate-100 dark:bg-gray-800"><tr><th class="p-3">Recebido</th><th class="p-3">Evento</th><th class="p-3">Assinatura MP</th><th class="p-3">Status confirmado</th></tr></thead>
+      <tbody><tr *ngFor="let event of billingEvents" class="border-t dark:border-gray-800"><td class="p-3">{{ event.receivedAt | date:'short' }}</td><td class="p-3">{{ event.type }} · {{ event.providerEventId }}</td><td class="p-3">{{ event.providerSubscriptionId }}</td><td class="p-3">{{ event.status }}</td></tr>
+        <tr *ngIf="billingEvents.length === 0"><td colspan="4" class="p-6 text-center text-slate-500">Nenhum evento recebido.</td></tr></tbody>
+    </table>
+  </section>
+</main>

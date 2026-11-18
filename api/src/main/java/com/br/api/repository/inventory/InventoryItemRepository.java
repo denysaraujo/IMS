@@ -54,4 +54,7 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
     
     @Query("SELECT i.category, COUNT(i), SUM(i.quantity), SUM(i.quantity * i.unitPrice) FROM InventoryItem i GROUP BY i.category")
     List<Object[]> getItemsSummaryByCategory();
+
+    @Query(value = "SELECT company_id, COUNT(*) FROM inventory_items GROUP BY company_id", nativeQuery = true)
+    List<Object[]> countAllByCompany();
 }

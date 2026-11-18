@@ -4,6 +4,7 @@ import com.br.api.model.inventory.Inventory;
 import com.br.api.model.inventory.InventoryItem;
 import com.br.api.repository.inventory.InventoryItemRepository;
 import com.br.api.repository.inventory.InventoryRepository;
+import com.br.api.service.saas.PlanLimitService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -31,6 +32,9 @@ class InventoryItemServiceTest {
 
     @Mock
     private InventoryRepository inventoryRepository;
+
+    @Mock
+    private PlanLimitService planLimitService;
 
     @InjectMocks
     private InventoryItemService inventoryItemService;

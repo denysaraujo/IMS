@@ -2,18 +2,25 @@ package com.br.api.model.sales;
 
 import com.br.api.model.customer.Customer;
 import jakarta.persistence.*;
+import org.hibernate.annotations.TenantId;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "sales")
+@Table(name = "sales", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_sales_company_code", columnNames = {"company_id", "sale_code"})
+})
 public class Sale {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @TenantId
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private Long tenantId;
+
+    @Column(nullable = false)
     private String saleCode;
 
     @Column(nullable = false)

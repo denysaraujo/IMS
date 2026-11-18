@@ -1,0 +1,85 @@
+<main class="min-h-screen bg-slate-50 px-4 py-10 dark:bg-gray-950">
+  <div class="mx-auto max-w-5xl">
+    <header class="mb-8 text-center">
+      <a routerLink="/login" class="text-sm font-semibold text-blue-600 hover:underline">Voltar ao login</a>
+      <h1 class="mt-4 text-3xl font-bold text-slate-900 dark:text-white">Comece a usar o IMS</h1>
+      <p class="mt-2 text-slate-600 dark:text-gray-300">Cadastre sua empresa e comece um período de avaliação. A assinatura pode ser ativada na área de cobrança.</p>
+    </header>
+
+    <p *ngIf="errorMessage" class="mb-5 rounded-lg bg-red-50 p-4 text-red-700 dark:bg-red-950 dark:text-red-200">{{ errorMessage }}</p>
+    <p *ngIf="loadingPlans" class="py-12 text-center text-slate-600 dark:text-gray-300">Carregando planos...</p>
+
+    <div *ngIf="!loadingPlans" class="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+      <section>
+        <h2 class="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Escolha seu plano</h2>
+        <div class="space-y-3">
+          <label *ngFor="let plan of plans" class="block cursor-pointer rounded-2xl border p-5 transition"
+                 [class.border-blue-600]="form.planId === plan.id"
+                 [class.bg-blue-50]="form.planId === plan.id"
+                 [class.border-slate-200]="form.planId !== plan.id"
+                 [class.dark:border-gray-700]="form.planId !== plan.id">
+            <div class="flex items-start gap-3">
+              <input type="radio" name="planId" [value]="plan.id" [(ngModel)]="form.planId" class="mt-1 accent-blue-600" />
+              <div class="flex-1">
+                <div class="flex items-center justify-between gap-3">
+                  <h3 class="font-bold text-slate-900 dark:text-white">{{ plan.name }}</h3>
+                  <span class="font-bold text-blue-700 dark:text-blue-300">
+                    {{ plan.amount | currency:plan.currency:'symbol':'1.2-2':'pt-BR' }}
+                    <small class="font-normal text-slate-500">/ {{ plan.frequency }} {{ plan.frequencyType === 'months' ? 'mês(es)' : 'dia(s)' }}</small>
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-600 dark:text-gray-300">{{ plan.description }}</p>
+                <ul class="mt-3 space-y-1 text-sm text-slate-600 dark:text-gray-300">
+                  <li *ngFor="let feature of plan.features">✓ {{ feature.name }}</li>
+                  <li>Até {{ formatLimit(plan.maxUsers) }} usuários</li>
+                  <li>Até {{ formatLimit(plan.maxCustomers) }} clientes</li>
+                  <li>Até {{ formatLimit(plan.maxInventoryItems) }} itens de estoque</li>
+                </ul>
+              </div>
+            </div>
+          </label>
+          <p *ngIf="plans.length === 0" class="rounded-lg bg-amber-50 p-4 text-amber-800">Ainda não há planos disponíveis para cadastro.</p>
+        </div>
+      </section>
+
+      <form (ngSubmit)="submit()" #signupForm="ngForm" class="space-y-4 rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-900">
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Dados da empresa e do administrador</h2>
+        <label class="block text-sm font-medium text-slate-700 dark:text-gray-200">
+          Nome da empresa
+          <input name="companyName" [(ngModel)]="form.companyName" required maxlength="255"
+                 class="mt-1 w-full rounded-lg border border-slate-300 p-3 dark:border-gray-700 dark:bg-gray-800" />
+        </label>
+        <label class="block text-sm font-medium text-slate-700 dark:text-gray-200">
+          CPF/CNPJ <span class="font-normal text-slate-500">(opcional)</span>
+          <input name="companyDocument" [(ngModel)]="form.companyDocument" maxlength="32"
+                 class="mt-1 w-full rounded-lg border border-slate-300 p-3 dark:border-gray-700 dark:bg-gray-800" />
+        </label>
+        <label class="block text-sm font-medium text-slate-700 dark:text-gray-200">
+          Nome do administrador
+          <input name="ownerName" [(ngModel)]="form.ownerName" required maxlength="255"
+                 class="mt-1 w-full rounded-lg border border-slate-300 p-3 dark:border-gray-700 dark:bg-gray-800" />
+        </label>
+        <label class="block text-sm font-medium text-slate-700 dark:text-gray-200">
+          E-mail de cobrança e acesso
+          <input type="email" name="email" [(ngModel)]="form.email" required email maxlength="255"
+                 class="mt-1 w-full rounded-lg border border-slate-300 p-3 dark:border-gray-700 dark:bg-gray-800" />
+        </label>
+        <label class="block text-sm font-medium text-slate-700 dark:text-gray-200">
+          Nome de usuário
+          <input name="username" [(ngModel)]="form.username" required minlength="3" maxlength="80"
+                 class="mt-1 w-full rounded-lg border border-slate-300 p-3 dark:border-gray-700 dark:bg-gray-800" />
+        </label>
+        <label class="block text-sm font-medium text-slate-700 dark:text-gray-200">
+          Senha
+          <input type="password" name="password" [(ngModel)]="form.password" required minlength="8" maxlength="72"
+                 class="mt-1 w-full rounded-lg border border-slate-300 p-3 dark:border-gray-700 dark:bg-gray-800" />
+        </label>
+        <button type="submit" [disabled]="signupForm.invalid || submitting || !form.planId"
+                class="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+          {{ submitting ? 'Criando conta...' : 'Iniciar período de avaliação' }}
+        </button>
+        <p class="text-xs text-slate-500 dark:text-gray-400">O acesso à aplicação é liberado após a confirmação da assinatura.</p>
+      </form>
+    </div>
+  </div>
+</main>

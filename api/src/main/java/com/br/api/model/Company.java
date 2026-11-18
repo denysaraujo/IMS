@@ -45,6 +45,9 @@ public class Company {
     @Column(name = "print_footer")
     private String printFooter;
 
+    @Column(nullable = false)
+    private boolean enabled = true;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -151,6 +154,14 @@ public class Company {
 
     public void setPrintFooter(String printFooter) {
         this.printFooter = printFooter;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public LocalDateTime getCreatedAt() {

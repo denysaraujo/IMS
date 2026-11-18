@@ -1,20 +1,27 @@
 package com.br.api.model.inventory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.TenantId;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "inventories")
+@Table(name = "inventories", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_inventories_company_code", columnNames = {"company_id", "inventory_code"})
+})
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String inventoryCode;
+
+    @TenantId
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private Long tenantId;
 
     @Column(nullable = false)
     private String name;

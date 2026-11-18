@@ -40,6 +40,8 @@ public class WebSecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",          
+                    "/api/saas/public/**",
+                    "/api/billing/webhook",
                     "/auth/**",
                     "/api-docs/**",
                     "/v3/api-docs/**",
@@ -49,6 +51,7 @@ public class WebSecurityConfig {
                     "/webjars/**",
                     "/error"
                 )                .permitAll()
+                .requestMatchers("/api/saas/admin/**").hasAuthority("ROLE_PLATFORM_ADMIN")
                 .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/inventory/items")
                     .hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR", "ROLE_USER")

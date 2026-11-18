@@ -7,6 +7,7 @@ import com.br.api.dto.user.UserUpdateDTO;
 import com.br.api.model.Role;
 import com.br.api.model.User;
 import com.br.api.repository.UserRepository;
+import com.br.api.service.saas.PlanLimitService;
 
 import jakarta.transaction.Transactional;
 
@@ -24,13 +25,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PlanLimitService planLimitService;
 
     public UserService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            PlanLimitService planLimitService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.planLimitService = planLimitService;
     }
 
     public List<UserResponseDTO> findAll() {
@@ -54,6 +58,10 @@ public class UserService {
     public UserResponseDTO create(UserCreateDTO dto) {
 
         validateNewUser(dto);
+        if (dto.getRole() == Role.PLATFORM_ADMIN) {
+            throw new IllegalArgumentException("Não é permitido criar um administrador da plataforma por este endpoint.");
+        }
+        planLimitService.assertCanAddUser();
 
         Role role = dto.getRole() != null
                 ? dto.getRole()
@@ -126,6 +134,9 @@ public class UserService {
         }
 
         if (dto.getRole() != null) {
+            if (dto.getRole() == Role.PLATFORM_ADMIN) {
+                throw new IllegalArgumentException("Não é permitido atribuir o papel de administrador da plataforma.");
+            }
             user.setRole(dto.getRole());
         }
 

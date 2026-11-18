@@ -3,6 +3,7 @@ package com.br.api.service.customer;
 import com.br.api.model.customer.Customer;
 import com.br.api.repository.customer.CustomerRepository;
 import com.br.api.dto.CustomerWithStatsDTO;
+import com.br.api.service.saas.PlanLimitService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,9 @@ public class CustomerService {
     
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private PlanLimitService planLimitService;
     
     public List<CustomerWithStatsDTO> findAll() {
         List<CustomerWithStatsDTO> customers = customerRepository.findAllWithStats();
@@ -40,6 +44,9 @@ public class CustomerService {
     }
     
     public Customer save(Customer customer) {
+        if (customer.getId() == null) {
+            planLimitService.assertCanAddCustomer();
+        }
         // Validar se documento já existe
         if (customer.getId() == null) {
             Optional<Customer> existing = customerRepository.findByDocument(customer.getDocument());

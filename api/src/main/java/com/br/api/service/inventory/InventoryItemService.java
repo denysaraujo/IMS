@@ -4,6 +4,7 @@ import com.br.api.model.inventory.Inventory;
 import com.br.api.model.inventory.InventoryItem;
 import com.br.api.repository.inventory.InventoryItemRepository;
 import com.br.api.repository.inventory.InventoryRepository;
+import com.br.api.service.saas.PlanLimitService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +16,14 @@ public class InventoryItemService {
 
     private final InventoryItemRepository inventoryItemRepository;
     private final InventoryRepository inventoryRepository;
+    private final PlanLimitService planLimitService;
 
     public InventoryItemService(InventoryItemRepository inventoryItemRepository, 
-                              InventoryRepository inventoryRepository) {
+                              InventoryRepository inventoryRepository,
+                              PlanLimitService planLimitService) {
         this.inventoryItemRepository = inventoryItemRepository;
         this.inventoryRepository = inventoryRepository;
+        this.planLimitService = planLimitService;
     }
 
     public List<InventoryItem> findAll() {
@@ -64,6 +68,7 @@ public class InventoryItemService {
 
     @Transactional
     public InventoryItem createInventoryItem(Long inventoryId, InventoryItem item) {
+        planLimitService.assertCanAddInventoryItem();
         Inventory inventory = inventoryRepository.findById(inventoryId)
             .orElseThrow(() -> new RuntimeException("Inventário não encontrado com id: " + inventoryId));
         

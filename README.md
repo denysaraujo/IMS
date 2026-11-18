@@ -55,3 +55,23 @@ SPRING_MAIL_SMTP_STARTTLS=true
 ```
 
 O token enviado por e-mail expira em 15 minutos e pode ser usado uma única vez.
+
+## Isolamento multi-tenant
+
+Cada empresa (`Company`) é o tenant da aplicação. O backend obtém o tenant do usuário autenticado e o Hibernate restringe automaticamente as consultas e gravações de usuários, clientes, inventários, itens, vendas e locações a essa empresa.
+
+Ao aplicar a migração `V5`, os registros existentes são associados à primeira empresa cadastrada. Se ainda não houver uma empresa, é criada uma empresa legada para preservar os dados atuais. Códigos e documentos que precisam ser únicos são únicos dentro do tenant, não globalmente.
+
+## Planos, cadastro e Mercado Pago
+
+A migração `V6` cria o catálogo de funcionalidades, planos, assinaturas e eventos de cobrança; a `V7` adiciona período de avaliação, limites por plano e mantém as empresas existentes em um plano legado sem cobrança. O cadastro público (`/signup`) cria a empresa e o administrador com período de avaliação de 14 dias (configurável por `SAAS_TRIAL_DAYS`). Após o trial, o acesso às funcionalidades depende de uma assinatura ativa.
+
+A primeira configuração do serviço deve:
+
+1. Definir `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`, `MERCADOPAGO_NOTIFICATION_URL` e `MERCADOPAGO_BACK_URL` no ambiente do backend. A URL de notificação deve apontar para `/api/billing/webhook`; use credenciais de teste do Mercado Pago para validar antes de produção.
+2. Definir `PLATFORM_ADMIN_USERNAME` e `PLATFORM_ADMIN_PASSWORD` (mínimo de 12 caracteres) para criar uma conta global de administração. Essa conta é criada uma vez; remova as variáveis depois do bootstrap.
+3. Entrar em `/saas-admin`, criar planos, definir limites opcionais de usuários/clientes/itens de estoque e associar funcionalidades. O auto cadastro fica disponível em `/signup` quando houver planos ativos.
+
+O webhook valida a assinatura HMAC do Mercado Pago, consulta o estado da assinatura diretamente à API do provedor e deduplica eventos. O painel `/saas-admin` permite administrar empresas, ver indicadores e uso por tenant, suspender/reativar acesso, gerenciar planos e funcionalidades e consultar assinaturas, pagamentos e eventos. O administrador de cada empresa pode consultar e cancelar a assinatura em `/billing`.
+
+Credenciais não devem ser incluídas no repositório nem no `.env` enviado ao controle de versão. Os arquivos `.example-env` contêm apenas os nomes das variáveis.

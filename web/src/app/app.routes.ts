@@ -13,6 +13,8 @@ import { authGuard } from './guards/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'signup', loadComponent: () => import('./components/signup/signup.component').then(m => m.SignupComponent) },
+  { path: 'billing/return', loadComponent: () => import('./components/subscription/billing-return.component').then(m => m.BillingReturnComponent) },
   {
     path: 'dashboard',
     component: DashboardComponent,
@@ -29,6 +31,18 @@ export const routes: Routes = [
     component: CompanyComponent,
     canActivate: [authGuard],
     data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'billing',
+    loadComponent: () => import('./components/subscription/subscription.component').then(m => m.SubscriptionComponent),
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'saas-admin',
+    loadComponent: () => import('./components/saas-admin/saas-admin.component').then(m => m.SaasAdminComponent),
+    canActivate: [authGuard],
+    data: { roles: ['PLATFORM_ADMIN'] }
   },
   {
     path: 'inventory',

@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS companies (
     updated_at TIMESTAMP
 );
 
-INSERT INTO companies (name)
-SELECT 'IMS - Tenant legado'
+INSERT INTO companies (name, created_at)
+SELECT 'IMS - Tenant legado', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1 FROM companies);
 
 DO $$
